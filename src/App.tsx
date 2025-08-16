@@ -4,7 +4,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { AuthProvider } from "@/components/auth/AuthProvider";
+import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
+import StudentAuth from "./pages/auth/StudentAuth";
+import TeacherAuth from "./pages/auth/TeacherAuth";
+import SuperAdminAuth from "./pages/auth/SuperAdminAuth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -15,13 +20,25 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <MainLayout>
+        <AuthProvider>
           <Routes>
-            <Route path="/" element={<Dashboard />} />
+            {/* Public routes */}
+            <Route path="/" element={<Landing />} />
+            <Route path="/auth/student" element={<StudentAuth />} />
+            <Route path="/auth/teacher" element={<TeacherAuth />} />
+            <Route path="/auth/superadmin" element={<SuperAdminAuth />} />
+            
+            {/* Protected routes */}
+            <Route path="/dashboard" element={
+              <MainLayout>
+                <Dashboard />
+              </MainLayout>
+            } />
+            
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </MainLayout>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

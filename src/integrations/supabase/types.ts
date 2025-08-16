@@ -14,7 +14,144 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      invite_codes: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          current_uses: number | null
+          email: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          max_uses: number | null
+          role: Database["public"]["Enums"]["user_role"]
+          track: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          current_uses?: number | null
+          email?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          role?: Database["public"]["Enums"]["user_role"]
+          track?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          current_uses?: number | null
+          email?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          role?: Database["public"]["Enums"]["user_role"]
+          track?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          first_name: string | null
+          id: string
+          is_active: boolean | null
+          last_name: string | null
+          password_changed: boolean | null
+          role: Database["public"]["Enums"]["user_role"]
+          track: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          first_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_name?: string | null
+          password_changed?: boolean | null
+          role?: Database["public"]["Enums"]["user_role"]
+          track?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_name?: string | null
+          password_changed?: boolean | null
+          role?: Database["public"]["Enums"]["user_role"]
+          track?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      superadmin_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+        }
+        Relationships: []
+      }
+      teacher_credentials: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          email: string
+          id: string
+          is_used: boolean | null
+          pre_password: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          email: string
+          id?: string
+          is_used?: boolean | null
+          pre_password: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          id?: string
+          is_used?: boolean | null
+          pre_password?: string
+          used_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +160,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      user_role: "student" | "teacher" | "superadmin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +287,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      user_role: ["student", "teacher", "superadmin"],
+    },
   },
 } as const
