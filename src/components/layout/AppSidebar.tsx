@@ -28,12 +28,11 @@ import {
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
 
-// Mock user role - in real app this would come from auth context
-const userRole: "student" | "teacher" | "admin" = "student"
+import { useAuth } from "@/components/auth/AuthProvider";
 
 const studentItems = [
-  { title: "Dashboard", url: "/", icon: BarChart3 },
-  { title: "Assessments", url: "/assessments", icon: BookOpen },
+  { title: "Dashboard", url: "/student/dashboard", icon: BarChart3 },
+  { title: "Assessments", url: "/student/assessments", icon: BookOpen },
   { title: "Activities", url: "/activities", icon: Activity },
   { title: "Reports", url: "/reports", icon: FileText },
   { title: "Profile", url: "/profile", icon: User },
@@ -41,9 +40,9 @@ const studentItems = [
 ]
 
 const teacherItems = [
-  { title: "Dashboard", url: "/", icon: BarChart3 },
-  { title: "Students", url: "/students", icon: Users },
-  { title: "Assessments", url: "/assessments", icon: BookOpen },
+  { title: "Dashboard", url: "/teacher/dashboard", icon: BarChart3 },
+  { title: "Students", url: "/teacher/students", icon: Users },
+  { title: "Assessments", url: "/teacher/assessments", icon: BookOpen },
   { title: "Activities", url: "/activities", icon: Activity },
   { title: "Class Reports", url: "/class-reports", icon: PieChart },
   { title: "Lesson Generator", url: "/lesson-generator", icon: Lightbulb },
@@ -54,11 +53,12 @@ const teacherItems = [
 
 export function AppSidebar() {
   const { state, toggleSidebar } = useSidebar()
+  const { profile } = useAuth()
   const location = useLocation()
   const currentPath = location.pathname
   const collapsed = state === "collapsed"
 
-  const items = userRole === "teacher" || userRole === "admin" ? teacherItems : studentItems
+  const items = profile?.role === "teacher" || profile?.role === "superadmin" ? teacherItems : studentItems
 
   const isActive = (path: string) => {
     if (path === "/") return currentPath === "/"
@@ -123,10 +123,10 @@ export function AppSidebar() {
             <div className="glass-card p-3 text-center">
               <div className="w-8 h-8 bg-primary/20 rounded-full mx-auto mb-2 flex items-center justify-center">
                 <span className="text-sm font-semibold text-primary">
-                  {userRole === "teacher" ? "T" : "S"}
+                  {profile?.role === "teacher" ? "T" : "S"}
                 </span>
               </div>
-              <p className="text-xs font-medium text-foreground capitalize">{userRole}</p>
+              <p className="text-xs font-medium text-foreground capitalize">{profile?.role}</p>
               <p className="text-xs text-muted-foreground">Account</p>
             </div>
           </div>

@@ -81,8 +81,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
                   // Teacher needs to change password
                   navigate('/auth/teacher');
                 } else {
-                  // Redirect to appropriate dashboard
-                  navigate('/');
+                  // Redirect to appropriate dashboard based on role
+                  if (profileData.role === 'student') {
+                    navigate('/student/dashboard');
+                  } else if (profileData.role === 'teacher') {
+                    navigate('/teacher/dashboard');
+                  } else if (profileData.role === 'superadmin') {
+                    navigate('/superadmin');
+                  }
                 }
               }
             }
@@ -90,7 +96,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         } else {
           setProfile(null);
           // Redirect unauthenticated users to landing page if they're on protected routes
-          const protectedRoutes = ['/dashboard', '/assessments', '/activities', '/reports', '/profile'];
+          const protectedRoutes = ['/dashboard', '/student', '/teacher', '/superadmin', '/assessments', '/activities', '/reports', '/profile'];
           const isProtectedRoute = protectedRoutes.some(route => location.pathname.startsWith(route));
           
           if (isProtectedRoute) {

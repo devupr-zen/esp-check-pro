@@ -4,13 +4,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GlassCard } from "@/components/reusable/GlassCard";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Lock, Shield } from "lucide-react";
+import { ArrowLeft, Lock, Shield, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export default function SuperAdminAuth() {
   const [loading, setLoading] = useState(false);
   const [accessCode, setAccessCode] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -102,13 +103,20 @@ export default function SuperAdminAuth() {
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="accessCode"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="Enter access code"
                     value={accessCode}
                     onChange={(e) => setAccessCode(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 pr-10"
                     required
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
               </div>
 
