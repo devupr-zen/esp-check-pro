@@ -14,6 +14,71 @@ export type Database = {
   }
   public: {
     Tables: {
+      class_members: {
+        Row: {
+          class_id: string
+          id: string
+          joined_at: string
+          status: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          class_id: string
+          id?: string
+          joined_at?: string
+          status?: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          id?: string
+          joined_at?: string
+          status?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_class_members_class_id"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      classes: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       invite_codes: {
         Row: {
           code: string
@@ -80,7 +145,7 @@ export type Database = {
           is_active?: boolean | null
           last_name?: string | null
           password_changed?: boolean | null
-          role?: Database["public"]["Enums"]["user_role"]
+          role: Database["public"]["Enums"]["user_role"]
           track?: string | null
           updated_at?: string
           user_id: string
@@ -98,6 +163,45 @@ export type Database = {
           track?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      student_invites: {
+        Row: {
+          class_id: string
+          code: string
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          status: string
+          student_name: string
+          teacher_id: string
+          used_at: string | null
+        }
+        Insert: {
+          class_id: string
+          code: string
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          status?: string
+          student_name: string
+          teacher_id: string
+          used_at?: string | null
+        }
+        Update: {
+          class_id?: string
+          code?: string
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          status?: string
+          student_name?: string
+          teacher_id?: string
+          used_at?: string | null
         }
         Relationships: []
       }
@@ -157,9 +261,35 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_invite_and_email: {
+        Args: {
+          class_id_input: string
+          email_input: string
+          student_name_input: string
+        }
+        Returns: {
+          code: string
+          expires_at: string
+        }[]
+      }
+      remove_student_from_class: {
+        Args: { class_id_input: string; student_id_input: string }
+        Returns: boolean
+      }
+      resend_invite: {
+        Args: { invite_code_input: string }
+        Returns: boolean
+      }
       use_invite_code: {
         Args: { code_input: string; user_email: string }
         Returns: boolean
+      }
+      use_student_invite: {
+        Args: { invite_code_input: string; user_id_input: string }
+        Returns: {
+          class_id: string
+          class_name: string
+        }[]
       }
       validate_invite_code: {
         Args: { code_input: string }
