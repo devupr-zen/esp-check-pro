@@ -157,7 +157,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      use_invite_code: {
+        Args: { code_input: string; user_email: string }
+        Returns: boolean
+      }
+      validate_invite_code: {
+        Args: { code_input: string }
+        Returns: {
+          is_valid: boolean
+          role: Database["public"]["Enums"]["user_role"]
+          track: string
+        }[]
+      }
     }
     Enums: {
       user_role: "student" | "teacher" | "superadmin"
