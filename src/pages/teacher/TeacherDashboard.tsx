@@ -134,6 +134,7 @@ export default function TeacherDashboard() {
                 <card.icon className={`h-6 w-6 ${card.color}`} />
               </div>
               <MetricChip 
+                label={card.title}
                 value={typeof card.value === 'number' ? card.value : 0} 
                 trend="up" 
               />
