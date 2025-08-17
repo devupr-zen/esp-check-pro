@@ -33,15 +33,12 @@ export default function StudentAuth() {
 
     try {
       if (mode === 'signup') {
-        // Validate invite code first
-        const { data: inviteData, error: inviteError } = await supabase
-          .from('invite_codes')
-          .select('*')
-          .eq('code', formData.inviteCode)
-          .eq('is_active', true)
-          .single();
+        // Validate invite code first using secure function
+        const { data: validationData, error: inviteError } = await supabase.rpc('validate_invite_code', {
+          code_input: formData.inviteCode
+        });
 
-        if (inviteError || !inviteData) {
+        if (inviteError || !validationData || validationData.length === 0) {
           toast({
             title: "Invalid invite code",
             description: "Please check your invite code and try again.",
@@ -76,14 +73,15 @@ export default function StudentAuth() {
 
         if (error) throw error;
 
-        // Update invite code usage
-        await supabase
-          .from('invite_codes')
-          .update({ 
-            current_uses: inviteData.current_uses + 1,
-            is_active: inviteData.current_uses + 1 >= inviteData.max_uses ? false : true
-          })
-          .eq('id', inviteData.id);
+        // Update invite code usage using secure function
+        const { error: useCodeError } = await supabase.rpc('use_invite_code', {
+          code_input: formData.inviteCode,
+          user_email: formData.email
+        });
+
+        if (useCodeError) {
+          console.error('Error updating invite code:', useCodeError);
+        }
 
         toast({
           title: "Account created!",
