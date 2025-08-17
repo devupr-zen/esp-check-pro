@@ -35,18 +35,29 @@ export default function StudentAuth() {
 
     try {
       if (mode === 'signup') {
-        // Validate invite code first using secure function
-        const { data: validationData, error: inviteError } = await supabase.rpc('validate_invite_code', {
-          code_input: formData.inviteCode
-        });
+        // Check for student invite or regular invite
+        const { data: studentInvite } = await supabase
+          .from('student_invites')
+          .select('*')
+          .eq('code', formData.inviteCode)
+          .eq('status', 'pending')
+          .gt('expires_at', new Date().toISOString())
+          .maybeSingle();
 
-        if (inviteError || !validationData || validationData.length === 0) {
-          toast({
-            title: "Invalid invite code",
-            description: "Please check your invite code and try again.",
-            variant: "destructive"
+        // Fallback to regular invite validation
+        if (!studentInvite) {
+          const { data: validationData, error: inviteError } = await supabase.rpc('validate_invite_code', {
+            code_input: formData.inviteCode
           });
-          return;
+
+          if (inviteError || !validationData || validationData.length === 0) {
+            toast({
+              title: "Invalid invite code",
+              description: "Please check your invite code and try again.",
+              variant: "destructive"
+            });
+            return;
+          }
         }
 
         if (formData.password !== formData.confirmPassword) {
@@ -59,7 +70,7 @@ export default function StudentAuth() {
         }
 
         // Sign up user
-        const { error } = await supabase.auth.signUp({
+        const { data: authData, error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
@@ -75,14 +86,19 @@ export default function StudentAuth() {
 
         if (error) throw error;
 
-        // Update invite code usage using secure function
-        const { error: useCodeError } = await supabase.rpc('use_invite_code', {
-          code_input: formData.inviteCode,
-          user_email: formData.email
-        });
-
-        if (useCodeError) {
-          console.error('Error updating invite code:', useCodeError);
+        // Use appropriate invite based on type
+        if (studentInvite && authData.user) {
+          const { error: useStudentInviteError } = await supabase.rpc('use_student_invite', {
+            invite_code_input: formData.inviteCode,
+            user_id_input: authData.user.id
+          });
+          if (useStudentInviteError) console.error('Error using student invite:', useStudentInviteError);
+        } else {
+          const { error: useCodeError } = await supabase.rpc('use_invite_code', {
+            code_input: formData.inviteCode,
+            user_email: formData.email
+          });
+          if (useCodeError) console.error('Error updating invite code:', useCodeError);
         }
 
         toast({
