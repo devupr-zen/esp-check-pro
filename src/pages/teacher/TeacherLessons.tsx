@@ -3,7 +3,6 @@ import { GlassCard } from "@/components/GlassCard";
 import { BookOpenCheck, Plus } from "lucide-react";
 import { requireRole } from "@/components/auth/RouteGuard";
 
-export default function TeacherLessons() {
 function TeacherLessons() {
   return (
     <div className="space-y-6">
