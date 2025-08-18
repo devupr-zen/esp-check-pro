@@ -19,6 +19,7 @@ import ClassEdit from "./pages/teacher/ClassEdit";
 import TeacherStudents from "./pages/teacher/TeacherStudents";
 import TeacherAssessments from "./pages/teacher/TeacherAssessments";
 import TeacherAssessmentNew from "./pages/teacher/TeacherAssessmentNew"; // NEW
+import TeacherAssignmentDetail from "./pages/teacher/TeacherAssignmentDetail";
 import TeacherLessons from "./pages/teacher/TeacherLessons";
 import TeacherReports from "./pages/teacher/TeacherReports";
 import TeacherBilling from "./pages/teacher/TeacherBilling";
@@ -63,6 +64,7 @@ const App = () => (
             {/* NEW: teacher create assignment */}
             <Route path="/teacher/assessments/new" element={<MainLayout><TeacherAssessmentNew /></MainLayout>} />
             <Route path="/teacher/lessons" element={<MainLayout><TeacherLessons /></MainLayout>} />
+            <Route path="/teacher/assessments/:assignmentId" element={<MainLayout><TeacherAssignmentDetail /></MainLayout>} />
             <Route path="/teacher/reports" element={<MainLayout><TeacherReports /></MainLayout>} />
             <Route path="/teacher/billing" element={<MainLayout><TeacherBilling /></MainLayout>} />
             <Route path="/teacher/invites" element={<MainLayout><TeacherInvites /></MainLayout>} />
