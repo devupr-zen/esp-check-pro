@@ -1,15 +1,12 @@
-import { 
-  BarChart2,
-  BookOpen,
-  Activity,
-  FileText,
-  User
-} from "lucide-react"
+// src/config/navigation/studentNav.ts
+// Back-compat shim. Do not remove until all imports point to "@/config/navigation".
+// This re-exports the single source of truth from ../navigation
+// and also provides a legacy STUDENT_NAV for older code that still expects it.
 
-export const STUDENT_NAV = [
-  { label: 'Dashboard', icon: BarChart2, href: '/student/dashboard' },
-  { label: 'Assessments', icon: BookOpen, href: '/student/assessments' },
-  { label: 'Activities', icon: Activity, href: '/student/activities' },
-  { label: 'Reports', icon: FileText, href: '/student/reports' },
-  { label: 'Profile', icon: User, href: '/student/profile' },
-]
+import { studentNav as nav } from "../navigation"
+
+export default nav
+export { nav as studentNav }
+
+// Legacy shape: [{ label, icon, href }]
+export const STUDENT_NAV = nav.map(({ label, icon, href }) => ({ label, icon, href }))
