@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/GlassCard";
 import { BookOpenCheck, Plus } from "lucide-react";
+import { requireRole } from "@/components/auth/RouteGuard";
 
 export default function TeacherLessons() {
+function TeacherLessons() {
   return (
     <div className="space-y-6">
       <header className="flex items-center justify-between">
@@ -28,3 +30,5 @@ export default function TeacherLessons() {
     </div>
   );
 }
+
+export default requireRole("teacher")(TeacherLessons);
