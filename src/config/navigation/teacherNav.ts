@@ -1,21 +1,7 @@
-import { 
-  BarChart2,
-  Users,
-  UserPlus,
-  BookOpen,
-  CalendarCheck2,
-  Library,
-  FileText,
-  CreditCard
-} from "lucide-react"
+// src/config/navigation/teacherNav.ts
+import { teacherNav } from "../navigation"
+export default teacherNav
+export { teacherNav }
 
-export const TEACHER_NAV = [
-  { label: 'Dashboard', icon: BarChart2, href: '/teacher/dashboard' },
-  { label: 'Classes', icon: Users, href: '/teacher/classes' },
-  { label: 'Students', icon: UserPlus, href: '/teacher/students' },
-  { label: 'Assessments', icon: BookOpen, href: '/teacher/assessments' },
-  { label: 'Plan', icon: CalendarCheck2, href: '/teacher/plan' },
-  { label: 'Resources', icon: Library, href: '/teacher/resources' },
-  { label: 'Reports', icon: FileText, href: '/teacher/reports' },
-  { label: 'Billing', icon: CreditCard, href: '/teacher/billing' },
-]
+// Legacy shape for older code: [{ label, icon, href }]
+export const TEACHER_NAV = teacherNav.map(({ label, icon, href }) => ({ label, icon, href }))
