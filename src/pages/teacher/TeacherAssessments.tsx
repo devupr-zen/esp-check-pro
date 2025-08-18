@@ -1,167 +1,209 @@
-import { GlassCard } from "@/components/reusable/GlassCard";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { BookOpen, Plus, Users, Calendar, Clock, BarChart3 } from "lucide-react";
+import React, { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/lib/supabase';
+import { GlassCard } from '@/components/GlassCard';
+import { Button } from '@/components/ui/button';
+import { Loader2, Plus, RefreshCw } from 'lucide-react';
+
+type AssignmentRow = {
+  id: string;
+  class_id: string;
+  assessment_id: string;
+  due_at: string | null;
+  assessments?: { title?: string | null } | null;
+  classes?: { name?: string | null } | null;
+};
+
+type SubmissionRow = {
+  id: string;
+  assignment_id: string;
+  status: 'draft' | 'submitted' | 'graded' | string;
+};
 
 export default function TeacherAssessments() {
-  const assessments = [
-    {
-      id: 1,
-      title: "Grammar Fundamentals Test",
-      description: "Assessment covering basic grammar rules and sentence structure",
-      type: "Quiz",
-      difficulty: "Beginner",
-      students: 32,
-      submitted: 28,
-      pending: 4,
-      dueDate: "2024-01-20",
-      status: "Active"
-    },
-    {
-      id: 2,
-      title: "Reading Comprehension Exercise",
-      description: "Read passages and answer comprehension questions",
-      type: "Assignment",
-      difficulty: "Intermediate",
-      students: 25,
-      submitted: 25,
-      pending: 0,
-      dueDate: "2024-01-18",
-      status: "Completed"
-    },
-    {
-      id: 3,
-      title: "Business Vocabulary Quiz",
-      description: "Test knowledge of business-related terminology",
-      type: "Quiz",
-      difficulty: "Advanced",
-      students: 18,
-      submitted: 12,
-      pending: 6,
-      dueDate: "2024-01-22",
-      status: "Active"
-    },
-    {
-      id: 4,
-      title: "Essay Writing Assessment",
-      description: "500-word essay on professional communication",
-      type: "Writing",
-      difficulty: "Intermediate",
-      students: 30,
-      submitted: 0,
-      pending: 30,
-      dueDate: "2024-01-25",
-      status: "Draft"
-    }
-  ];
+  const navigate = useNavigate();
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "Beginner": return "bg-primary/20 text-primary";
-      case "Intermediate": return "bg-accent/20 text-accent";
-      case "Advanced": return "bg-destructive/20 text-destructive";
-      default: return "bg-muted/20 text-muted-foreground";
+  // Load assignments for teacher-owned classes (RLS enforces ownership)
+  const {
+    data: assignments,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['teacher-assignments'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('assessment_assignments')
+        .select(
+          `
+            id, class_id, assessment_id, due_at,
+            assessments ( title ),
+            classes ( name )
+          `
+        )
+        .order('due_at', { ascending: true, nullsFirst: false });
+      if (error) throw error;
+      return (data ?? []) as AssignmentRow[];
+    },
+  });
+
+  // Load submission counts per assignment
+  const assignmentIds = useMemo(
+    () => (assignments ?? []).map((a) => a.id),
+    [assignments]
+  );
+
+  const {
+    data: submissions,
+    isLoading: isLoadingSubs,
+    refetch: refetchSubs,
+  } = useQuery({
+    enabled: assignmentIds.length > 0,
+    queryKey: ['teacher-assignments-submissions', assignmentIds],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('student_submissions')
+        .select('id, assignment_id, status')
+        .in('assignment_id', assignmentIds);
+      if (error) throw error;
+      return (data ?? []) as SubmissionRow[];
+    },
+  });
+
+  const summaryByAssignment = useMemo(() => {
+    const map = new Map<
+      string,
+      { total: number; submitted: number; graded: number }
+    >();
+    (submissions ?? []).forEach((s) => {
+      const cur = map.get(s.assignment_id) ?? {
+        total: 0,
+        submitted: 0,
+        graded: 0,
+      };
+      cur.total += 1;
+      if (s.status === 'submitted' || s.status === 'graded') cur.submitted += 1;
+      if (s.status === 'graded') cur.graded += 1;
+      map.set(s.assignment_id, cur);
+    });
+    return map;
+  }, [submissions]);
+
+  // Optional: demo-grade action to validate RPC
+  const handleDemoGrade = async () => {
+    const id = window.prompt('Enter a submission_id to grade (demo):');
+    if (!id) return;
+    const { error } = await supabase.rpc('grade_submission', {
+      p_submission_id: id,
+      p_score: 85,
+      p_feedback: 'Well done',
+      p_status: 'graded',
+    });
+    if (error) {
+      alert(`Grade failed: ${error.message}`);
+    } else {
+      alert('Graded!');
+      refetchSubs();
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Active": return "bg-primary/20 text-primary";
-      case "Completed": return "bg-accent/20 text-accent";
-      case "Draft": return "bg-muted/20 text-muted-foreground";
-      default: return "bg-muted/20 text-muted-foreground";
-    }
-  };
+  if (isLoading) {
+    return (
+      <div className="p-6 flex items-center gap-2">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        <span>Loading assessments…</span>
+      </div>
+    );
+  }
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "Quiz": return <BookOpen className="h-4 w-4" />;
-      case "Assignment": return <Calendar className="h-4 w-4" />;
-      case "Writing": return <BarChart3 className="h-4 w-4" />;
-      default: return <BookOpen className="h-4 w-4" />;
-    }
-  };
+  if (isError) {
+    return (
+      <div className="p-6">
+        <GlassCard className="p-6">
+          <div className="text-red-600 font-medium">Failed to load assessments</div>
+          <div className="text-sm opacity-80 mt-1">
+            {(error as any)?.message ?? 'Unknown error'}
+          </div>
+          <Button variant="secondary" className="mt-4" onClick={() => refetch()}>
+            <RefreshCw className="mr-2 h-4 w-4" /> Retry
+          </Button>
+        </GlassCard>
+      </div>
+    );
+  }
+
+  const hasData = (assignments?.length ?? 0) > 0;
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Assessments</h1>
-          <p className="text-muted-foreground">Create and manage student assessments</p>
+    <div className="p-6 space-y-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Assessments</h1>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              refetch();
+              refetchSubs();
+            }}
+          >
+            <RefreshCw className="mr-2 h-4 w-4" /> Refresh
+          </Button>
+          <Button onClick={() => navigate('/teacher/assessments/new')}>
+            <Plus className="mr-2 h-4 w-4" /> Create assignment
+          </Button>
         </div>
-        <Button className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Create Assessment
-        </Button>
       </div>
 
-      <div className="grid gap-6">
-        {assessments.map((assessment) => (
-          <GlassCard key={assessment.id} className="p-6">
-            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between space-y-4 lg:space-y-0">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  {getTypeIcon(assessment.type)}
-                  <h3 className="text-lg font-semibold text-foreground">{assessment.title}</h3>
-                  <Badge variant="outline" className="flex items-center gap-1">
-                    {assessment.type}
-                  </Badge>
-                </div>
-                
-                <p className="text-muted-foreground mb-4">{assessment.description}</p>
-                
-                <div className="flex flex-wrap items-center gap-4 text-sm">
-                  <Badge className={getDifficultyColor(assessment.difficulty)}>
-                    {assessment.difficulty}
-                  </Badge>
-                  <Badge className={getStatusColor(assessment.status)}>
-                    {assessment.status}
-                  </Badge>
-                  <div className="flex items-center gap-1 text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                    Due: {assessment.dueDate}
-                  </div>
-                </div>
-              </div>
-
-              <div className="lg:w-80 space-y-4">
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div className="p-3 rounded-lg bg-primary/10">
-                    <div className="flex items-center justify-center mb-1">
-                      <Users className="h-4 w-4 text-primary" />
+      {!hasData ? (
+        <GlassCard className="p-10 text-center">
+          <div className="text-lg font-medium">No assessments yet.</div>
+          <div className="text-sm opacity-70 mt-1">
+            Create your first assignment to get started.
+          </div>
+          <Button className="mt-4" onClick={() => navigate('/teacher/assessments/new')}>
+            <Plus className="mr-2 h-4 w-4" /> Create assignment
+          </Button>
+        </GlassCard>
+      ) : (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {assignments!.map((a) => {
+            const s = summaryByAssignment.get(a.id);
+            const statusSummary = s
+              ? `${s.submitted}/${s.total} submitted • ${s.graded} graded`
+              : isLoadingSubs
+              ? 'Loading…'
+              : '—';
+            return (
+              <GlassCard key={a.id} className="p-5 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="font-semibold">
+                      {a.assessments?.title ?? 'Untitled assessment'}
                     </div>
-                    <p className="text-lg font-semibold text-foreground">{assessment.students}</p>
-                    <p className="text-xs text-muted-foreground">Assigned</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-accent/10">
-                    <div className="flex items-center justify-center mb-1">
-                      <BarChart3 className="h-4 w-4 text-accent" />
+                    <div className="text-sm opacity-80">
+                      Class: {a.classes?.name ?? a.class_id}
                     </div>
-                    <p className="text-lg font-semibold text-foreground">{assessment.submitted}</p>
-                    <p className="text-xs text-muted-foreground">Submitted</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-destructive/10">
-                    <div className="flex items-center justify-center mb-1">
-                      <Clock className="h-4 w-4 text-destructive" />
-                    </div>
-                    <p className="text-lg font-semibold text-foreground">{assessment.pending}</p>
-                    <p className="text-xs text-muted-foreground">Pending</p>
                   </div>
                 </div>
-
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1">
-                    View Details
-                  </Button>
-                  <Button size="sm" className="flex-1">
-                    Manage
+                <div className="text-sm">
+                  <span className="opacity-70">Due:</span>{' '}
+                  {a.due_at ? new Date(a.due_at).toLocaleString() : '—'}
+                </div>
+                <div className="text-sm">
+                  <span className="opacity-70">Status:</span> {statusSummary}
+                </div>
+                <div className="pt-2 flex gap-2">
+                  <Button variant="secondary" size="sm" onClick={handleDemoGrade}>
+                    Demo Grade
                   </Button>
                 </div>
-              </div>
-            </div>
-          </GlassCard>
-        ))}
-      </div>
+              </GlassCard>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
