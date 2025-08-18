@@ -13,6 +13,8 @@ import SuperAdminAuth from "./pages/auth/SuperAdminAuth";
 import StudentDashboard from "./pages/student/StudentDashboard";
 import StudentAssessments from "./pages/student/StudentAssessments";
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
+import ClassesList from "./pages/teacher/ClassesList";
+import ClassEdit from "./pages/teacher/ClassEdit";
 import TeacherStudents from "./pages/teacher/TeacherStudents";
 import TeacherAssessments from "./pages/teacher/TeacherAssessments";
 import TeacherBilling from "./pages/teacher/TeacherBilling";
@@ -43,6 +45,8 @@ const App = () => (
             <Route path="/student/dashboard" element={<MainLayout><StudentDashboard /></MainLayout>} />
             <Route path="/student/assessments" element={<MainLayout><StudentAssessments /></MainLayout>} />
             <Route path="/teacher/dashboard" element={<MainLayout><TeacherDashboard /></MainLayout>} />
+            <Route path="/teacher/classes" element={<MainLayout><ClassesList /></MainLayout>} />
+            <Route path="/teacher/classes/:id/edit" element={<MainLayout><ClassEdit /></MainLayout>} />
             <Route path="/teacher/students" element={<MainLayout><TeacherStudents /></MainLayout>} />
             <Route path="/teacher/assessments" element={<MainLayout><TeacherAssessments /></MainLayout>} />
             <Route path="/teacher/billing" element={<MainLayout><TeacherBilling /></MainLayout>} />
