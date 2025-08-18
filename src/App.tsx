@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { AuthProvider } from "@/components/auth/AuthProvider";
-import { supabase } from '@/lib/supabase';
+import { supabaseEnvOk } from "@/lib/supabase";
 
 // Lazy pages (so a bug in one page can’t crash everything)
 import React, { Suspense } from "react";
