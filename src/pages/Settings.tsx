@@ -1,7 +1,9 @@
 import { GlassCard } from "@/components/GlassCard";
 import { Settings } from "lucide-react";
+import { RouteGuard } from "@/components/auth/RouteGuard";
+import { useAuth } from "@/components/auth/AuthProvider";
 
-export default function SettingsPage() {
+function SettingsInner() {
   return (
     <div className="space-y-6">
       <header className="flex items-center justify-between">
@@ -19,5 +21,20 @@ export default function SettingsPage() {
         </p>
       </GlassCard>
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  // Dynamically select the required role: teacher or student.
+  // Superadmin is allowed by RouteGuard automatically.
+  const { profile } = useAuth();
+  const role = (profile?.role === "teacher" ? "teacher" : "student") as
+    | "teacher"
+    | "student";
+
+  return (
+    <RouteGuard requiredRole={role}>
+      <SettingsInner />
+    </RouteGuard>
   );
 }
