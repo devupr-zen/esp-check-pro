@@ -38,6 +38,12 @@ export const defaultFeatures: FeatureFlags = {
   admin: true,
 }
 
+// inside teacherNav in src/config/navigation.ts
+import { Users, CreditCard, UserPlus } from "lucide-react"
+// ...
+{ href: "/teacher/students", label: "Students", icon: UserPlus, roles: ["teacher","superadmin"] },
+{ href: "/teacher/billing", label: "Billing", icon: CreditCard, roles: ["teacher","superadmin"] },
+
 // Lucide icons – keep imports local so code splits nicely
 import {
   LayoutDashboard, Users, ClipboardList, BookOpenCheck,
