@@ -1,7 +1,9 @@
 import { GlassCard } from "@/components/GlassCard";
 import { Activity } from "lucide-react";
+import { requireRole } from "@/components/auth/RouteGuard";
 
 export default function StudentActivities() {
+function StudentActivities() {
   return (
     <div className="space-y-6">
       <header className="flex items-center justify-between">
@@ -21,3 +23,5 @@ export default function StudentActivities() {
     </div>
   );
 }
+
+export default requireRole("student")(StudentActivities);
