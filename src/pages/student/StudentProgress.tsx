@@ -1,7 +1,8 @@
 import { GlassCard } from "@/components/GlassCard";
 import { BarChart3 } from "lucide-react";
+import { requireRole } from "@/components/auth/RouteGuard";
 
-export default function StudentProgress() {
+function StudentProgress() {
   return (
     <div className="space-y-6">
       <header className="flex items-center justify-between">
@@ -20,3 +21,5 @@ export default function StudentProgress() {
     </div>
   );
 }
+
+export default requireRole("student")(StudentProgress);
