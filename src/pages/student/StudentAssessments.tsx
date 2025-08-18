@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
@@ -37,6 +38,8 @@ function statusLabel(s?: string) {
 }
 
 export default function StudentAssessments() {
+  const navigate = useNavigate();
+
   // 1) Assignments visible to the student (RLS filters by membership)
   const {
     data: assignments,
@@ -162,17 +165,29 @@ export default function StudentAssessments() {
                   {a.due_at ? new Date(a.due_at).toLocaleString() : '—'}
                 </div>
                 <div className="text-sm">
-                  <span className="opacity-70">Status:</span> {isLoadingSubs ? 'Loading…' : status}
+                  <span className="opacity-70">Status:</span>{' '}
+                  {isLoadingSubs ? 'Loading…' : status}
                 </div>
                 {sub?.status === 'graded' && (
                   <div className="text-sm">
                     <span className="opacity-70">Score:</span>{' '}
                     {typeof sub.score === 'number' ? `${sub.score}` : '—'}
                     {sub.updated_at && (
-                      <span className="opacity-60"> • Updated {new Date(sub.updated_at).toLocaleString()}</span>
+                      <span className="opacity-60">
+                        • Updated {new Date(sub.updated_at).toLocaleString()}
+                      </span>
                     )}
                   </div>
                 )}
+                {/* New Open button */}
+                <div className="pt-2">
+                  <Button
+                    size="sm"
+                    onClick={() => navigate(`/student/assessments/${a.id}`)}
+                  >
+                    Open
+                  </Button>
+                </div>
               </GlassCard>
             );
           })}
