@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { GlassCard } from '@/components/GlassCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, RefreshCw, ArrowLeft, CheckCircle2, XCircle, Pencil } from 'lucide-react';
+import { Loader2, RefreshCw, ArrowLeft, CheckCircle2, XCircle, Pencil, Link2 } from 'lucide-react';
 
 type Assignment = {
   id: string;
@@ -21,8 +21,8 @@ type Submission = {
   score: number | null;
   feedback: string | null;
   updated_at: string | null;
-  // Optional helper (see micro-SQL below)
-  created_by?: string | null;
+  created_by?: string | null;            // optional (if you added created_by)
+  submission_file_path?: string | null;  // optional (uploads)
 };
 
 type Profile = {
@@ -73,22 +73,20 @@ export default function TeacherAssignmentDetail() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('student_submissions')
-        .select('id, assignment_id, status, score, feedback, updated_at, created_by')
+        .select('id, assignment_id, status, score, feedback, updated_at, created_by, submission_file_path')
         .eq('assignment_id', assignmentId);
       if (error) throw error;
       return (data ?? []) as Submission[];
     },
   });
 
-  // 3) Attempt to resolve student names (best-effort; falls back to short id)
+  // 3) Best-effort student names
   const createdByIds = useMemo(
     () => Array.from(new Set((submissions ?? []).map(s => s.created_by).filter(Boolean))) as string[],
     [submissions]
   );
 
-  const {
-    data: profiles,
-  } = useQuery({
+  const { data: profiles } = useQuery({
     enabled: createdByIds.length > 0,
     queryKey: ['t-assign-subs-profiles', createdByIds],
     queryFn: async () => {
@@ -143,6 +141,16 @@ export default function TeacherAssignmentDetail() {
     }
   };
 
+  const openAttachment = async (path?: string | null) => {
+    if (!path) return;
+    const { data, error } = await supabase.storage.from('submissions').createSignedUrl(path, 60 * 10);
+    if (error) {
+      alert(error.message);
+      return;
+    }
+    window.open(data.signedUrl, '_blank');
+  };
+
   if (loadingA || loadingS) {
     return (
       <div className="p-6 flex items-center gap-2">
@@ -177,7 +185,9 @@ export default function TeacherAssignmentDetail() {
         </Button>
         <div className="text-right">
           <div className="text-xl font-semibold">{title}</div>
-          <div className="text-sm opacity-80">Class: {className} • Due: {assignment.due_at ? new Date(assignment.due_at).toLocaleString() : '—'}</div>
+          <div className="text-sm opacity-80">
+            Class: {className} • Due: {assignment.due_at ? new Date(assignment.due_at).toLocaleString() : '—'}
+          </div>
         </div>
       </div>
 
@@ -233,6 +243,22 @@ export default function TeacherAssignmentDetail() {
                     <span className="opacity-60"> • Updated {new Date(s.updated_at).toLocaleString()}</span>
                   )}
                 </div>
+
+                {/* Attachment viewer */}
+                {s.submission_file_path ? (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => openAttachment(s.submission_file_path!)}
+                    >
+                      <Link2 className="mr-2 h-4 w-4" /> Open attachment
+                    </Button>
+                    <div className="text-xs opacity-70 truncate">{s.submission_file_path}</div>
+                  </div>
+                ) : (
+                  <div className="text-xs opacity-60">No attachment</div>
+                )}
 
                 {!isEditing ? (
                   <div className="pt-2">
