@@ -1,6 +1,7 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { supabaseEnvOk } from "@/lib/supabase";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -20,7 +21,7 @@ import TeacherStudents from "./pages/teacher/TeacherStudents";
 import TeacherAssessments from "./pages/teacher/TeacherAssessments";
 import TeacherAssessmentNew from "./pages/teacher/TeacherAssessmentNew";
 import TeacherAssignmentDetail from "./pages/teacher/TeacherAssignmentDetail";
-import AssessmentAuthoring from "./pages/teacher/AssessmentAuthoring"; // NEW
+import AssessmentAuthoring from "./pages/teacher/AssessmentAuthoring";
 import TeacherLessons from "./pages/teacher/TeacherLessons";
 import TeacherReports from "./pages/teacher/TeacherReports";
 import TeacherBilling from "./pages/teacher/TeacherBilling";
@@ -40,6 +41,11 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      {!supabaseEnvOk && (
+        <div className="bg-red-600 text-white text-sm px-4 py-2">
+        Supabase env vars missing. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel.
+        </div>
+    )}
       <BrowserRouter>
         <AuthProvider>
           <Routes>
@@ -48,7 +54,7 @@ const App = () => (
             <Route path="/auth/student" element={<StudentAuth />} />
             <Route path="/auth/teacher" element={<TeacherAuth />} />
             <Route path="/auth/superadmin" element={<SuperAdminAuth />} />
-            
+
             {/* Protected routes */}
             <Route path="/dashboard" element={<MainLayout><Dashboard /></MainLayout>} />
             <Route path="/student/dashboard" element={<MainLayout><StudentDashboard /></MainLayout>} />
@@ -63,7 +69,7 @@ const App = () => (
             <Route path="/teacher/assessments" element={<MainLayout><TeacherAssessments /></MainLayout>} />
             <Route path="/teacher/assessments/new" element={<MainLayout><TeacherAssessmentNew /></MainLayout>} />
             <Route path="/teacher/assessments/:assignmentId" element={<MainLayout><TeacherAssignmentDetail /></MainLayout>} />
-            <Route path="/teacher/assessments/author" element={<MainLayout><AssessmentAuthoring /></MainLayout>} />{/* NEW */}
+            <Route path="/teacher/assessments/author" element={<MainLayout><AssessmentAuthoring /></MainLayout>} />
             <Route path="/teacher/lessons" element={<MainLayout><TeacherLessons /></MainLayout>} />
             <Route path="/teacher/reports" element={<MainLayout><TeacherReports /></MainLayout>} />
             <Route path="/teacher/billing" element={<MainLayout><TeacherBilling /></MainLayout>} />
@@ -72,8 +78,8 @@ const App = () => (
             <Route path="/settings" element={<MainLayout><Settings /></MainLayout>} />
             <Route path="/admin" element={<MainLayout><AdminHub /></MainLayout>} />
             <Route path="/superadmin" element={<MainLayout><SuperAdminOverview /></MainLayout>} />
-            
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+
+            {/* CATCH-ALL */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

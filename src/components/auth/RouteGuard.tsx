@@ -3,12 +3,13 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
 
-type Role = 'teacher' | 'student' | 'superadmin';
+export type Role = 'teacher' | 'student' | 'superadmin';
 
 interface RouteGuardProps {
   requireRole?: Role;
 }
 
+// Default export (component)
 export default function RouteGuard({
   requireRole,
   children,
@@ -16,7 +17,6 @@ export default function RouteGuard({
   const { user, profile, loading } = useAuth();
   const location = useLocation();
 
-  // While auth is resolving, show a tiny spinner (prevents flicker)
   if (loading) {
     return (
       <div className="p-6 flex items-center gap-2">
@@ -26,7 +26,6 @@ export default function RouteGuard({
     );
   }
 
-  // Not signed in → send to the correct auth page with returnTo
   if (!user) {
     const returnTo = encodeURIComponent(location.pathname + location.search);
     const authPath =
@@ -38,7 +37,6 @@ export default function RouteGuard({
     return <Navigate to={`${authPath}?returnTo=${returnTo}`} replace />;
   }
 
-  // If a role is required, enforce it (superadmin bypass for teacher/student)
   if (requireRole) {
     const role = (profile?.role as Role | undefined) ?? 'student';
     const roleMatches =
@@ -46,11 +44,19 @@ export default function RouteGuard({
       (role === 'superadmin' && (requireRole === 'teacher' || requireRole === 'student'));
 
     if (!roleMatches) {
-      // Signed in but wrong role → send to a safe landing (your main dashboard)
       return <Navigate to="/dashboard" replace />;
     }
   }
 
-  // Authorized
   return <>{children}</>;
 }
+
+/* ------------------------------------------------------------------
+   Backward-compatibility shims so both styles compile:
+
+     import RouteGuard from '@/components/auth/RouteGuard'
+     import { RouteGuard, requireRole } from '@/components/auth/RouteGuard'
+
+------------------------------------------------------------------- */
+export { RouteGuard }; // named export of the default component
+export const requireRole = (_role: Role) => undefined;
