@@ -2,7 +2,6 @@ import { GlassCard } from "@/components/GlassCard";
 import { BarChart3 } from "lucide-react";
 import { requireRole } from "@/components/auth/RouteGuard";
 
-export default function TeacherReports() {
 function TeacherReports() {
   return (
     <div className="space-y-6">
