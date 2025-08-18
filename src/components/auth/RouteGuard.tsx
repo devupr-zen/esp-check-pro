@@ -1,70 +1,56 @@
-import React from "react"
-import { Navigate, useLocation } from "react-router-dom"
-import { useAuth } from "./AuthProvider"
+import React, { PropsWithChildren } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/components/auth/AuthProvider';
 
-type Role = "teacher" | "student" | "superadmin"
+type Role = 'teacher' | 'student' | 'superadmin';
 
 interface RouteGuardProps {
-  children: React.ReactNode
-  requiredRole: Exclude<Role, "superadmin"> // keep API: pages require "teacher" or "student"
+  requireRole?: Role;
 }
 
-export function RouteGuard({ children, requiredRole }: RouteGuardProps) {
-  const { profile, loading } = useAuth()
-  const location = useLocation()
+export default function RouteGuard({
+  requireRole,
+  children,
+}: PropsWithChildren<RouteGuardProps>) {
+  const { user, profile, loading } = useAuth();
+  const location = useLocation();
 
-  // 1) Loading → show lightweight spinner
+  // While auth is resolving, show a tiny spinner (prevents flicker)
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className="p-6 flex items-center gap-2">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        <span>Checking access…</span>
       </div>
-    )
+    );
   }
 
-  // 2) Not authenticated → to login with returnTo
-  if (!profile) {
-    const returnTo = encodeURIComponent(location.pathname + location.search)
-    return <Navigate to={`/login?returnTo=${returnTo}`} replace />
-    const returnTo = encodeURIComponent(location.pathname + location.search)
-    const authPath = requiredRole === "teacher" ? "/auth/teacher" : "/auth/student"
-    return <Navigate to={`${authPath}?returnTo=${returnTo}`} replace />
+  // Not signed in → send to the correct auth page with returnTo
+  if (!user) {
+    const returnTo = encodeURIComponent(location.pathname + location.search);
+    const authPath =
+      requireRole === 'teacher'
+        ? '/auth/teacher'
+        : requireRole === 'superadmin'
+        ? '/auth/superadmin'
+        : '/auth/student';
+    return <Navigate to={`${authPath}?returnTo=${returnTo}`} replace />;
   }
 
-  const role = profile.role as Role | undefined
+  // If a role is required, enforce it (superadmin bypass for teacher/student)
+  if (requireRole) {
+    const role = (profile?.role as Role | undefined) ?? 'student';
+    const roleMatches =
+      role === requireRole ||
+      (role === 'superadmin' && (requireRole === 'teacher' || requireRole === 'student'));
 
-  // 3) Unknown role → onboarding/track (adjust if you have a different route)
-  if (!role) {
-    return <Navigate to="/onboarding/track" replace />
-  }
-
-  // 4) Superadmin can access either teacher or student views
-  if (role === "superadmin") {
-    return <>{children}</>
-  }
-
-  // 5) Wrong role → redirect to correct dashboard
-  if (role !== requiredRole) {
-    const redirectPath = role === "teacher" ? "/teacher/dashboard" : "/student/dashboard"
-    if (location.pathname.startsWith(redirectPath)) {
-      return <>{children}</>
-    }
-    return <Navigate to={redirectPath} replace />
-  }
-
-  // 6) All good
-  return <>{children}</>
-}
-
-// HOC convenience wrapper; usage: export default requireRole("teacher")(Page)
-export function requireRole(requiredRole: Exclude<Role, "superadmin">) {
-  return function withGuard<P>(Component: React.ComponentType<P>) {
-    return function GuardedComponent(props: P) {
-      return (
-        <RouteGuard requiredRole={requiredRole}>
-          <Component {...props} />
-        </RouteGuard>
-      )
+    if (!roleMatches) {
+      // Signed in but wrong role → send to a safe landing (your main dashboard)
+      return <Navigate to="/dashboard" replace />;
     }
   }
+
+  // Authorized
+  return <>{children}</>;
 }
