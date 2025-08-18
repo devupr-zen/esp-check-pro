@@ -1,15 +1,18 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const admin = createClient(SUPABASE_URL!, SERVICE_KEY);
+if (!SUPABASE_URL || !SERVICE_KEY) {
+  throw new Error('Missing SUPABASE env vars (NEXT_PUBLIC_SUPABASE_URL/VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY)');
+}
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+const admin = createClient(SUPABASE_URL, SERVICE_KEY);
+
+export default async function handler(req: any, res: any) {
   try {
     if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
-    const path = (req.query.path as string) || '';
+    const path = (req.query?.path as string) || '';
     if (!path) return res.status(400).json({ error: 'path is required' });
 
     const EXPIRES = 60 * 10; // 10 minutes

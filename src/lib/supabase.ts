@@ -1,27 +1,20 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// Read env from Vite at build-time (browser-safe)
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
-// Expose a tiny helper so the app can show a clear message instead of crashing
+// Expose a flag so the UI can show a banner instead of crashing
 export const supabaseEnvOk = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 
 let supabase: SupabaseClient;
 
-// Never construct the client with empty strings — that can throw in prod
 if (supabaseEnvOk) {
   supabase = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-    },
+    auth: { persistSession: true, autoRefreshToken: true },
   });
 } else {
-  // Provide a proxy that throws readable errors if someone tries to use the client
   const msg =
-    '[Supabase] Missing VITE_SUPABASE_URL and/or VITE_SUPABASE_ANON_KEY. ' +
-    'Set them in Vercel → Project → Settings → Environment Variables.';
+    '[Supabase] Missing VITE_SUPABASE_URL and/or VITE_SUPABASE_ANON_KEY. Set them in Vercel → Project → Settings → Environment Variables.';
   // eslint-disable-next-line no-console
   console.error(msg);
   supabase = new Proxy({} as SupabaseClient, {

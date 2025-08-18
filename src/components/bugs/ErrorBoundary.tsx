@@ -10,7 +10,6 @@ export class ErrorBoundary extends React.Component<React.PropsWithChildren, Stat
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    // You can send to Sentry/Logflare here
     // eslint-disable-next-line no-console
     console.error('[ErrorBoundary]', error, info);
   }

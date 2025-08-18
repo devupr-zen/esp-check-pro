@@ -41,11 +41,14 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+
+      {/* Show a clear message if envs are missing (prevents white screen confusion) */}
       {!supabaseEnvOk && (
-        <div className="bg-red-600 text-white text-sm px-4 py-2">
-        Supabase env vars missing. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel.
+        <div className="bg-red-600 text-white text-sm px-4 py-2 text-center">
+          Supabase env vars missing. Set <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> in Vercel.
         </div>
-    )}
+      )}
+
       <BrowserRouter>
         <AuthProvider>
           <Routes>
