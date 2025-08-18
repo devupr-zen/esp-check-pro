@@ -10,38 +10,148 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.12 (cd3cf9e)"
+    PostgrestVersion: "13.0.4"
   }
   public: {
     Tables: {
-      class_members: {
+      assessment_assignments: {
         Row: {
-          class_id: string
+          assessment_id: string
+          class_id: string | null
+          created_at: string | null
+          created_by: string | null
+          due_at: string | null
           id: string
-          joined_at: string
-          status: string
-          student_id: string
-          updated_at: string
+          opens_at: string | null
+          user_id: string | null
         }
         Insert: {
-          class_id: string
+          assessment_id: string
+          class_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          due_at?: string | null
           id?: string
-          joined_at?: string
-          status?: string
-          student_id: string
-          updated_at?: string
+          opens_at?: string | null
+          user_id?: string | null
         }
         Update: {
-          class_id?: string
+          assessment_id?: string
+          class_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          due_at?: string | null
           id?: string
-          joined_at?: string
-          status?: string
-          student_id?: string
-          updated_at?: string
+          opens_at?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "fk_class_members_class_id"
+            foreignKeyName: "assessment_assignments_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_assignments_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assessments: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          title: string
+          type: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          title: string
+          type?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          title?: string
+          type?: string | null
+        }
+        Relationships: []
+      }
+      class_invites: {
+        Row: {
+          active: boolean
+          class_id: string
+          code: string
+          created_at: string | null
+          created_by: string
+          expires_at: string
+          revoked_at: string | null
+          role: string
+          usage_count: number
+          usage_limit: number
+        }
+        Insert: {
+          active?: boolean
+          class_id: string
+          code: string
+          created_at?: string | null
+          created_by: string
+          expires_at?: string
+          revoked_at?: string | null
+          role?: string
+          usage_count?: number
+          usage_limit?: number
+        }
+        Update: {
+          active?: boolean
+          class_id?: string
+          code?: string
+          created_at?: string | null
+          created_by?: string
+          expires_at?: string
+          revoked_at?: string | null
+          role?: string
+          usage_count?: number
+          usage_limit?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_invites_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      class_members: {
+        Row: {
+          class_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          class_id: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          class_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_members_class_id_fkey"
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "classes"
@@ -51,208 +161,61 @@ export type Database = {
       }
       classes: {
         Row: {
-          created_at: string
-          description: string | null
+          created_at: string | null
           id: string
-          is_active: boolean
+          level: string | null
           name: string
           teacher_id: string
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
-          created_at?: string
-          description?: string | null
+          created_at?: string | null
           id?: string
-          is_active?: boolean
+          level?: string | null
           name: string
           teacher_id: string
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
-          created_at?: string
-          description?: string | null
+          created_at?: string | null
           id?: string
-          is_active?: boolean
+          level?: string | null
           name?: string
           teacher_id?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      invite_codes: {
-        Row: {
-          code: string
-          created_at: string
-          created_by: string | null
-          current_uses: number | null
-          email: string | null
-          expires_at: string | null
-          id: string
-          is_active: boolean | null
-          max_uses: number | null
-          role: Database["public"]["Enums"]["user_role"]
-          track: string | null
-        }
-        Insert: {
-          code: string
-          created_at?: string
-          created_by?: string | null
-          current_uses?: number | null
-          email?: string | null
-          expires_at?: string | null
-          id?: string
-          is_active?: boolean | null
-          max_uses?: number | null
-          role?: Database["public"]["Enums"]["user_role"]
-          track?: string | null
-        }
-        Update: {
-          code?: string
-          created_at?: string
-          created_by?: string | null
-          current_uses?: number | null
-          email?: string | null
-          expires_at?: string | null
-          id?: string
-          is_active?: boolean | null
-          max_uses?: number | null
-          role?: Database["public"]["Enums"]["user_role"]
-          track?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
       profiles: {
         Row: {
-          avatar_url: string | null
           created_at: string
           email: string
           first_name: string | null
           id: string
-          is_active: boolean | null
           last_name: string | null
-          password_changed: boolean | null
-          role: Database["public"]["Enums"]["user_role"]
+          role: string
           track: string | null
           updated_at: string
-          user_id: string
         }
         Insert: {
-          avatar_url?: string | null
           created_at?: string
           email: string
           first_name?: string | null
-          id?: string
-          is_active?: boolean | null
+          id: string
           last_name?: string | null
-          password_changed?: boolean | null
-          role: Database["public"]["Enums"]["user_role"]
+          role?: string
           track?: string | null
           updated_at?: string
-          user_id: string
         }
         Update: {
-          avatar_url?: string | null
           created_at?: string
           email?: string
           first_name?: string | null
           id?: string
-          is_active?: boolean | null
           last_name?: string | null
-          password_changed?: boolean | null
-          role?: Database["public"]["Enums"]["user_role"]
+          role?: string
           track?: string | null
           updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      student_invites: {
-        Row: {
-          class_id: string
-          code: string
-          created_at: string
-          email: string
-          expires_at: string
-          id: string
-          status: string
-          student_name: string
-          teacher_id: string
-          used_at: string | null
-        }
-        Insert: {
-          class_id: string
-          code: string
-          created_at?: string
-          email: string
-          expires_at?: string
-          id?: string
-          status?: string
-          student_name: string
-          teacher_id: string
-          used_at?: string | null
-        }
-        Update: {
-          class_id?: string
-          code?: string
-          created_at?: string
-          email?: string
-          expires_at?: string
-          id?: string
-          status?: string
-          student_name?: string
-          teacher_id?: string
-          used_at?: string | null
-        }
-        Relationships: []
-      }
-      superadmin_codes: {
-        Row: {
-          code: string
-          created_at: string
-          id: string
-          is_active: boolean | null
-        }
-        Insert: {
-          code: string
-          created_at?: string
-          id?: string
-          is_active?: boolean | null
-        }
-        Update: {
-          code?: string
-          created_at?: string
-          id?: string
-          is_active?: boolean | null
-        }
-        Relationships: []
-      }
-      teacher_credentials: {
-        Row: {
-          created_at: string
-          created_by: string | null
-          email: string
-          id: string
-          is_used: boolean | null
-          pre_password: string
-          used_at: string | null
-        }
-        Insert: {
-          created_at?: string
-          created_by?: string | null
-          email: string
-          id?: string
-          is_used?: boolean | null
-          pre_password: string
-          used_at?: string | null
-        }
-        Update: {
-          created_at?: string
-          created_by?: string | null
-          email?: string
-          id?: string
-          is_used?: boolean | null
-          pre_password?: string
-          used_at?: string | null
         }
         Relationships: []
       }
@@ -261,47 +224,52 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      create_invite_and_email: {
+      admin_set_role: {
+        Args: { new_role: string; target_user: string }
+        Returns: undefined
+      }
+      create_class_invite: {
         Args: {
-          class_id_input: string
-          email_input: string
-          student_name_input: string
+          p_class_id: string
+          p_expires_at?: string
+          p_usage_limit?: number
         }
         Returns: {
+          active: boolean
+          class_id: string
           code: string
+          created_at: string | null
+          created_by: string
           expires_at: string
-        }[]
+          revoked_at: string | null
+          role: string
+          usage_count: number
+          usage_limit: number
+        }
       }
-      remove_student_from_class: {
-        Args: { class_id_input: string; student_id_input: string }
+      current_app_role: {
+        Args: { uid?: string }
+        Returns: string
+      }
+      is_superadmin: {
+        Args: { uid?: string }
         Returns: boolean
       }
-      resend_invite: {
-        Args: { invite_code_input: string }
-        Returns: boolean
+      random_code: {
+        Args: { n?: number }
+        Returns: string
       }
-      use_invite_code: {
-        Args: { code_input: string; user_email: string }
-        Returns: boolean
-      }
-      use_student_invite: {
-        Args: { invite_code_input: string; user_id_input: string }
+      redeem_class_invite: {
+        Args: { p_code: string }
         Returns: {
           class_id: string
           class_name: string
-        }[]
-      }
-      validate_invite_code: {
-        Args: { code_input: string }
-        Returns: {
-          is_valid: boolean
-          role: Database["public"]["Enums"]["user_role"]
-          track: string
+          was_added: boolean
         }[]
       }
     }
     Enums: {
-      user_role: "student" | "teacher" | "superadmin"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -428,8 +396,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      user_role: ["student", "teacher", "superadmin"],
-    },
+    Enums: {},
   },
 } as const
