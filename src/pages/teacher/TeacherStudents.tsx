@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Search, User, Send, Trash2, Calendar, AlertCircle, Plus } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 

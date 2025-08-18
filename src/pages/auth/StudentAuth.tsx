@@ -6,7 +6,7 @@ import { GlassCard } from "@/components/reusable/GlassCard";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Mail, Lock, User, KeyIcon, Eye, EyeOff } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from '@/lib/supabase';
 import { useToast } from "@/hooks/use-toast";
 
 type AuthMode = 'signin' | 'signup' | 'reset';

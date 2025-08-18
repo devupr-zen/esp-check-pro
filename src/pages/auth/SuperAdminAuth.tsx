@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { GlassCard } from "@/components/reusable/GlassCard";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Lock, Shield, Eye, EyeOff } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from '@/lib/supabase';
 import { useToast } from "@/hooks/use-toast";
 
 export default function SuperAdminAuth() {

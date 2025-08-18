@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Users, BookOpen, CreditCard, TrendingUp, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 

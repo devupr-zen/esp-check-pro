@@ -17,22 +17,32 @@ type Assignment = {
 type Submission = {
   id: string;
   assignment_id: string;
-  status: string | null;
+  status: string | null;  // 'draft' | 'submitted' | 'graded' (db may allow others)
   score?: number | null;
   feedback?: string | null;
   updated_at?: string | null;
-  answer_text?: string | null;         // optional
-  submission_file_path?: string | null; // optional upload path
+  answer_text?: string | null;
+  submission_file_path?: string | null;
 };
+
+// ---- Type guards ----
+function isSubmission(x: unknown): x is Submission {
+  const s = x as Submission | null | undefined;
+  return !!s && typeof s.id === 'string' && typeof s.assignment_id === 'string';
+}
+function isAssignment(x: unknown): x is Assignment {
+  const a = x as Assignment | null | undefined;
+  return !!a && typeof a.id === 'string';
+}
 
 export default function StudentAssessmentDetail() {
   const { assignmentId } = useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
 
-  const hasAnswer = true; // toggle to false if you didn't add answer_text
+  const hasAnswer = true; // set false if you didn't add answer_text to the table
 
-  // Get auth user for storage prefix
+  // 0) Auth user (for storage path prefix)
   const { data: userData } = useQuery({
     queryKey: ['auth-user'],
     queryFn: async () => {
@@ -49,7 +59,7 @@ export default function StudentAssessmentDetail() {
     isLoading: loadingAssignment,
     isError: errorAssignment,
     error: assignmentErr,
-  } = useQuery({
+  } = useQuery<Assignment | null>({
     queryKey: ['assignment-detail', assignmentId],
     enabled: !!assignmentId,
     queryFn: async () => {
@@ -63,26 +73,28 @@ export default function StudentAssessmentDetail() {
         .eq('id', assignmentId)
         .maybeSingle();
       if (error) throw error;
-      return data as Assignment | null;
+      return isAssignment(data) ? data : null;
     },
   });
 
-  // 2) Submission
+  // 2) Student's submission for this assignment
   const {
     data: submission,
     isLoading: loadingSubmission,
-  } = useQuery({
+  } = useQuery<Submission | null>({
     queryKey: ['my-submission', assignmentId],
     enabled: !!assignmentId,
     queryFn: async () => {
-      const sel = 'id, assignment_id, status, score, feedback, updated_at, submission_file_path' + (hasAnswer ? ', answer_text' : '');
+      const sel =
+        'id, assignment_id, status, score, feedback, updated_at, submission_file_path' +
+        (hasAnswer ? ', answer_text' : '');
       const { data, error } = await supabase
         .from('student_submissions')
         .select(sel)
         .eq('assignment_id', assignmentId)
         .maybeSingle();
       if (error) throw error;
-      return (data ?? null) as Submission | null;
+      return isSubmission(data) ? data : null;
     },
   });
 
@@ -95,30 +107,45 @@ export default function StudentAssessmentDetail() {
     if (hasAnswer && submission?.answer_text != null) {
       setAnswer(submission.answer_text ?? '');
     }
-  }, [submission, hasAnswer]);
+  }, [submission]);
 
   const canEdit = useMemo(() => submission?.status !== 'graded', [submission]);
 
-  // Upsert submission (draft/submit)
+  // Upsert submission (draft / submit)
   const upsert = useMutation({
-    mutationFn: async (payload: { status: 'draft' | 'submitted'; answer_text?: string; submission_file_path?: string | null }) => {
+    mutationFn: async (payload: {
+      status: 'draft' | 'submitted';                 // <- only these two (students never set "graded")
+      answer_text?: string;
+      submission_file_path?: string | null;
+    }) => {
       if (submission?.id) {
-        const updateData: any = { status: payload.status };
+        const updateData: Record<string, unknown> = { status: payload.status };
         if (hasAnswer) updateData.answer_text = payload.answer_text ?? null;
-        if (typeof payload.submission_file_path !== 'undefined') updateData.submission_file_path = payload.submission_file_path;
-        const { error } = await supabase.from('student_submissions').update(updateData).eq('id', submission.id);
+        if (typeof payload.submission_file_path !== 'undefined') {
+          updateData.submission_file_path = payload.submission_file_path;
+        }
+        const { error } = await supabase
+          .from('student_submissions')
+          .update(updateData)
+          .eq('id', submission.id);
         if (error) throw error;
         return { id: submission.id };
       } else {
-        const insertData: any = {
+        const insertData: Record<string, unknown> = {
           assignment_id: assignmentId,
           status: payload.status,
         };
         if (hasAnswer) insertData.answer_text = payload.answer_text ?? null;
-        if (typeof payload.submission_file_path !== 'undefined') insertData.submission_file_path = payload.submission_file_path;
-        const { data, error } = await supabase.from('student_submissions').insert(insertData).select('id').single();
+        if (typeof payload.submission_file_path !== 'undefined') {
+          insertData.submission_file_path = payload.submission_file_path;
+        }
+        const { data, error } = await supabase
+          .from('student_submissions')
+          .insert(insertData)
+          .select('id')
+          .single();
         if (error) throw error;
-        return { id: data.id as string };
+        return { id: (data as { id: string }).id };
       }
     },
     onSuccess: () => {
@@ -133,8 +160,8 @@ export default function StudentAssessmentDetail() {
         answer_text: hasAnswer ? answer : undefined,
       });
       alert('Draft saved.');
-    } catch (e: any) {
-      alert(`Save failed: ${e.message ?? e}`);
+    } catch (e) {
+      alert(`Save failed: ${(e as Error).message}`);
     }
   };
 
@@ -146,8 +173,8 @@ export default function StudentAssessmentDetail() {
         answer_text: hasAnswer ? answer : undefined,
       });
       alert('Submitted.');
-    } catch (e: any) {
-      alert(`Submit failed: ${e.message ?? e}`);
+    } catch (e) {
+      alert(`Submit failed: ${(e as Error).message}`);
     }
   };
 
@@ -158,19 +185,26 @@ export default function StudentAssessmentDetail() {
     try {
       setUploading(true);
       const path = `${userId}/${assignmentId}/${Date.now()}-${file.name}`;
-      const { error: upErr } = await supabase.storage.from('submissions').upload(path, file, { upsert: false });
+      const { error: upErr } = await supabase
+        .storage
+        .from('submissions')
+        .upload(path, file, { upsert: false });
       if (upErr) throw upErr;
 
+      // Preserve current status if it's 'submitted', otherwise keep as 'draft'.
+      const preservedStatus: 'draft' | 'submitted' =
+        submission?.status === 'submitted' ? 'submitted' : 'draft';
+
       await upsert.mutateAsync({
-        status: submission?.status === 'graded' ? 'graded' : (submission?.status as any) ?? 'draft',
+        status: preservedStatus,
         answer_text: hasAnswer ? answer : undefined,
         submission_file_path: path,
       });
 
       alert('File uploaded.');
       setFile(null);
-    } catch (e: any) {
-      alert(`Upload failed: ${e.message ?? e}`);
+    } catch (e) {
+      alert(`Upload failed: ${(e as Error).message}`);
     } finally {
       setUploading(false);
     }
@@ -178,9 +212,12 @@ export default function StudentAssessmentDetail() {
 
   const openFile = async () => {
     if (!submission?.submission_file_path) return;
-    const { data, error } = await supabase.storage.from('submissions').createSignedUrl(submission.submission_file_path, 60 * 10);
+    const { data, error } = await supabase
+      .storage
+      .from('submissions')
+      .createSignedUrl(submission.submission_file_path, 60 * 10);
     if (error) return alert(error.message);
-    window.open(data.signedUrl, '_blank');
+    if (data?.signedUrl) window.open(data.signedUrl, '_blank');
   };
 
   if (loadingAssignment || loadingSubmission) {
@@ -197,8 +234,14 @@ export default function StudentAssessmentDetail() {
       <div className="p-6">
         <GlassCard className="p-6">
           <div className="text-red-600 font-medium">Assessment not found</div>
-          <div className="text-sm opacity-80 mt-1">{(assignmentErr as any)?.message ?? 'You may not have access to this assignment.'}</div>
-          <Button variant="secondary" className="mt-4" onClick={() => navigate('/student/assessments')}>
+          <div className="text-sm opacity-80 mt-1">
+            {(assignmentErr as any)?.message ?? 'You may not have access to this assignment.'}
+          </div>
+          <Button
+            variant="secondary"
+            className="mt-4"
+            onClick={() => navigate('/student/assessments')}
+          >
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to My Assessments
           </Button>
         </GlassCard>
@@ -217,14 +260,19 @@ export default function StudentAssessmentDetail() {
       <GlassCard className="p-6 space-y-4">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-xl font-semibold">{assignment.assessments?.title ?? 'Untitled assessment'}</h1>
-            <div className="text-sm opacity-80">Class: {assignment.classes?.name ?? '—'}</div>
+            <h1 className="text-xl font-semibold">
+              {assignment.assessments?.title ?? 'Untitled assessment'}
+            </h1>
+            <div className="text-sm opacity-80">
+              Class: {assignment.classes?.name ?? '—'}
+            </div>
             <div className="text-sm opacity-80">
               Due: {assignment.due_at ? new Date(assignment.due_at).toLocaleString() : '—'}
             </div>
           </div>
           <div className="text-sm">
-            <span className="opacity-70">Status:</span> {submission?.status ?? 'Not started'}
+            <span className="opacity-70">Status:</span>{' '}
+            {submission?.status ?? 'Not started'}
             {submission?.status === 'graded' && typeof submission.score === 'number' && (
               <span className="ml-2">• Score: {submission.score}</span>
             )}
@@ -254,7 +302,11 @@ export default function StudentAssessmentDetail() {
         <div className="space-y-2">
           <label className="block text-sm font-medium">Attachment (optional)</label>
           <div className="flex gap-2 items-center">
-            <Input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} disabled={!canEdit || uploading} />
+            <Input
+              type="file"
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              disabled={!canEdit || uploading}
+            />
             <Button variant="secondary" onClick={handleUpload} disabled={!file || !canEdit || uploading}>
               {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Upload
@@ -269,10 +321,11 @@ export default function StudentAssessmentDetail() {
         </div>
 
         <div className="flex flex-wrap gap-2 pt-2">
-          <Button variant="secondary" onClick={handleSaveDraft} disabled={!canEdit || upsert.isLoading}>
+          {/* In React Query v5, the mutation loading flag is `isPending` */}
+          <Button variant="secondary" onClick={handleSaveDraft} disabled={!canEdit || upsert.isPending}>
             <Save className="mr-2 h-4 w-4" /> Save draft
           </Button>
-          <Button onClick={handleSubmit} disabled={!canEdit || upsert.isLoading}>
+          <Button onClick={handleSubmit} disabled={!canEdit || upsert.isPending}>
             <Send className="mr-2 h-4 w-4" /> Submit
           </Button>
         </div>

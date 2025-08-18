@@ -3,7 +3,6 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
-// Expose a flag so the UI can show a banner instead of crashing
 export const supabaseEnvOk = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 
 let supabase: SupabaseClient;
@@ -15,7 +14,6 @@ if (supabaseEnvOk) {
 } else {
   const msg =
     '[Supabase] Missing VITE_SUPABASE_URL and/or VITE_SUPABASE_ANON_KEY. Set them in Vercel → Project → Settings → Environment Variables.';
-  // eslint-disable-next-line no-console
   console.error(msg);
   supabase = new Proxy({} as SupabaseClient, {
     get() {

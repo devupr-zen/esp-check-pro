@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react"
-import { supabase } from "@/lib/supabase" // shimmed to @/integrations/supabase/client
+import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
