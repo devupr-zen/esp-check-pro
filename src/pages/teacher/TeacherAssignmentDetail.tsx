@@ -143,12 +143,14 @@ export default function TeacherAssignmentDetail() {
 
   const openAttachment = async (path?: string | null) => {
     if (!path) return;
-    const { data, error } = await supabase.storage.from('submissions').createSignedUrl(path, 60 * 10);
-    if (error) {
-      alert(error.message);
-      return;
+    try {
+      const resp = await fetch(`/api/storage/sign-download?path=${encodeURIComponent(path)}`);
+      const json = await resp.json();
+      if (!resp.ok) throw new Error(json.error || 'Failed to sign download');
+      window.open(json.url, '_blank');
+    } catch (e: any) {
+      alert(e.message ?? 'Failed to open attachment');
     }
-    window.open(data.signedUrl, '_blank');
   };
 
   if (loadingA || loadingS) {
