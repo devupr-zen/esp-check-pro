@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { GlassCard } from "@/components/GlassCard";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { BookOpenCheck, Plus } from "lucide-react";
 import { requireRole } from "@/components/auth/RouteGuard";
 
