@@ -43,7 +43,7 @@ export const defaultFeatures: FeatureFlags = {
   billing: true,
 }
 
-// Lucide icons – keep imports local so code splits nicely
+// Lucide icons
 import {
   LayoutDashboard,
   Users,
@@ -79,7 +79,7 @@ export const studentNav: NavItem[] = [
   { href: "/settings", label: "Settings", icon: Settings, roles: ["student", "superadmin"], feature: "settings" },
 ]
 
-// Superadmin shortcuts (optional)
+// Superadmin shortcuts
 export const adminNav: NavItem[] = [
   { href: "/admin", label: "Admin", icon: Shield, roles: ["superadmin"], feature: "admin" },
   { href: "/teacher/dashboard", label: "Teacher View", icon: LayoutDashboard, roles: ["superadmin"] },
