@@ -1,4 +1,4 @@
-import { GlassCard } from "@/components/reusable/GlassCard";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CreditCard, Download, Calendar, DollarSign, Users, TrendingUp } from "lucide-react";
