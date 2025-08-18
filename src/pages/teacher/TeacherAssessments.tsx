@@ -195,6 +195,10 @@ export default function TeacherAssessments() {
                   <span className="opacity-70">Status:</span> {statusSummary}
                 </div>
                 <div className="pt-2 flex gap-2">
+                  {/* NEW: Open detail page for grading */}
+                  <Button size="sm" onClick={() => navigate(`/teacher/assessments/${a.id}`)}>
+                    Open
+                  </Button>
                   <Button variant="secondary" size="sm" onClick={handleDemoGrade}>
                     Demo Grade
                   </Button>
