@@ -5,6 +5,6 @@ export const supabase = createClient(
   import.meta.env.VITE_SUPABASE_ANON_KEY!,
   {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
-    global: { fetch: (...a) => fetch(...a) },
+    global: { fetch: (url: RequestInfo | URL, init?: RequestInit) => fetch(url, init) },
   }
 )

@@ -16,6 +16,9 @@ import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import TeacherStudents from "./pages/teacher/TeacherStudents";
 import TeacherAssessments from "./pages/teacher/TeacherAssessments";
 import TeacherBilling from "./pages/teacher/TeacherBilling";
+import TeacherInvites from "./pages/teacher/TeacherInvites";
+import RedeemInvite from "./pages/redeem/RedeemInvite";
+import AdminHub from "./pages/admin";
 import SuperAdminOverview from "./pages/superadmin/SuperAdminOverview";
 import NotFound from "./pages/NotFound";
 
@@ -43,6 +46,9 @@ const App = () => (
             <Route path="/teacher/students" element={<MainLayout><TeacherStudents /></MainLayout>} />
             <Route path="/teacher/assessments" element={<MainLayout><TeacherAssessments /></MainLayout>} />
             <Route path="/teacher/billing" element={<MainLayout><TeacherBilling /></MainLayout>} />
+            <Route path="/teacher/invites" element={<MainLayout><TeacherInvites /></MainLayout>} />
+            <Route path="/redeem/:code" element={<RedeemInvite />} />
+            <Route path="/admin" element={<MainLayout><AdminHub /></MainLayout>} />
             <Route path="/superadmin" element={<MainLayout><SuperAdminOverview /></MainLayout>} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

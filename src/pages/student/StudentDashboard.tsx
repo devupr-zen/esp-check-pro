@@ -16,7 +16,7 @@ type AssignmentRow = {
   opens_at: string | null
   due_at: string | null
   created_at: string
-  assessments?: { title: string } | null
+  assessments?: { title: string } | { title: string }[] | null
 }
 
 function StudentDashboardInner() {
@@ -161,7 +161,9 @@ function StudentDashboardInner() {
                 return (
                   <div key={a.id} className="rounded-md border p-3">
                     <div className="flex items-center justify-between">
-                      <div className="font-medium">{a.assessments?.title || "Assessment"}</div>
+                      <div className="font-medium">{
+                        (Array.isArray(a.assessments) ? a.assessments[0]?.title : a.assessments?.title) || "Assessment"
+                      }</div>
                       <div className="text-xs text-muted-foreground">Due: {due}</div>
                     </div>
                     <Separator className="my-2" />
