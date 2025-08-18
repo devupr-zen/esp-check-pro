@@ -1,20 +1,21 @@
+// src/config/navigation.ts
 // Single source of truth for all role-based navigation.
-// Safe even if some routes don't exist yet (see feature flags).
+// Safe even if some routes don't exist yet (use feature flags to hide).
 
 import type { ComponentType } from "react"
 
-// Keep roles explicit
+// Explicit roles
 export type Role = "student" | "teacher" | "superadmin"
 
 export type NavItem = {
   href: string
   label: string
   icon?: ComponentType<{ className?: string }>
-  roles?: Role[]              // if omitted => visible to all roles
+  roles?: Role[]               // if omitted => visible to all roles
   feature?: keyof FeatureFlags // optional gating by feature flag
 }
 
-// Optional feature flags (turn items on/off without touching code)
+// Optional feature flags (toggle items without code changes)
 export type FeatureFlags = Partial<{
   invites: boolean
   assessments: boolean
@@ -24,9 +25,11 @@ export type FeatureFlags = Partial<{
   progress: boolean
   settings: boolean
   admin: boolean
+  students: boolean
+  billing: boolean
 }>
 
-// Default flags: everything on
+// Defaults: everything on
 export const defaultFeatures: FeatureFlags = {
   invites: true,
   assessments: true,
@@ -36,38 +39,44 @@ export const defaultFeatures: FeatureFlags = {
   progress: true,
   settings: true,
   admin: true,
+  students: true,
+  billing: true,
 }
-
-// inside teacherNav in src/config/navigation.ts
-import { Users, CreditCard, UserPlus } from "lucide-react"
-// ...
-{ href: "/teacher/students", label: "Students", icon: UserPlus, roles: ["teacher","superadmin"] },
-{ href: "/teacher/billing", label: "Billing", icon: CreditCard, roles: ["teacher","superadmin"] },
 
 // Lucide icons – keep imports local so code splits nicely
 import {
-  LayoutDashboard, Users, ClipboardList, BookOpenCheck,
-  BarChart3, Settings, Shield
+  LayoutDashboard,
+  Users,
+  ClipboardList,
+  BookOpenCheck,
+  BarChart3,
+  Settings,
+  Shield,
+  CreditCard,
+  UserPlus,
+  Activity,
 } from "lucide-react"
 
 // Teacher nav
 export const teacherNav: NavItem[] = [
-  { href: "/teacher/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["teacher","superadmin"] },
-  { href: "/teacher/classes", label: "Classes", icon: Users, roles: ["teacher","superadmin"] },
-  { href: "/teacher/invites", label: "Invites", icon: Shield, roles: ["teacher","superadmin"], feature: "invites" },
-  { href: "/teacher/assessments", label: "Assessments", icon: ClipboardList, roles: ["teacher","superadmin"], feature: "assessments" },
-  { href: "/teacher/lessons", label: "Lesson Plans", icon: BookOpenCheck, roles: ["teacher","superadmin"], feature: "lessons" },
-  { href: "/teacher/reports", label: "Reports", icon: BarChart3, roles: ["teacher","superadmin"], feature: "reports" },
-  { href: "/settings", label: "Settings", icon: Settings, roles: ["teacher","superadmin"], feature: "settings" },
+  { href: "/teacher/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["teacher", "superadmin"] },
+  { href: "/teacher/classes", label: "Classes", icon: Users, roles: ["teacher", "superadmin"] },
+  { href: "/teacher/students", label: "Students", icon: UserPlus, roles: ["teacher", "superadmin"], feature: "students" },
+  { href: "/teacher/invites", label: "Invites", icon: Shield, roles: ["teacher", "superadmin"], feature: "invites" },
+  { href: "/teacher/assessments", label: "Assessments", icon: ClipboardList, roles: ["teacher", "superadmin"], feature: "assessments" },
+  { href: "/teacher/lessons", label: "Lesson Plans", icon: BookOpenCheck, roles: ["teacher", "superadmin"], feature: "lessons" },
+  { href: "/teacher/reports", label: "Reports", icon: BarChart3, roles: ["teacher", "superadmin"], feature: "reports" },
+  { href: "/teacher/billing", label: "Billing", icon: CreditCard, roles: ["teacher", "superadmin"], feature: "billing" },
+  { href: "/settings", label: "Settings", icon: Settings, roles: ["teacher", "superadmin"], feature: "settings" },
 ]
 
 // Student nav
 export const studentNav: NavItem[] = [
-  { href: "/student/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["student","superadmin"] },
-  { href: "/student/activities", label: "Activities", icon: BookOpenCheck, roles: ["student","superadmin"], feature: "activities" },
-  { href: "/student/assessments", label: "Assessments", icon: ClipboardList, roles: ["student","superadmin"], feature: "assessments" },
-  { href: "/student/progress", label: "Progress", icon: BarChart3, roles: ["student","superadmin"], feature: "progress" },
-  { href: "/settings", label: "Settings", icon: Settings, roles: ["student","superadmin"], feature: "settings" },
+  { href: "/student/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["student", "superadmin"] },
+  { href: "/student/activities", label: "Activities", icon: Activity, roles: ["student", "superadmin"], feature: "activities" },
+  { href: "/student/assessments", label: "Assessments", icon: ClipboardList, roles: ["student", "superadmin"], feature: "assessments" },
+  { href: "/student/progress", label: "Progress", icon: BarChart3, roles: ["student", "superadmin"], feature: "progress" },
+  { href: "/settings", label: "Settings", icon: Settings, roles: ["student", "superadmin"], feature: "settings" },
 ]
 
 // Superadmin shortcuts (optional)
@@ -76,10 +85,10 @@ export const adminNav: NavItem[] = [
   { href: "/teacher/dashboard", label: "Teacher View", icon: LayoutDashboard, roles: ["superadmin"] },
 ]
 
-// Helper: get the right menu for a role and feature flags
+// Helper: pick nav for a role and filter by feature flags
 export function getNavForRole(role: Role, features: FeatureFlags = defaultFeatures): NavItem[] {
   const base = role === "teacher" ? teacherNav : role === "student" ? studentNav : adminNav
-  return base.filter(item => {
+  return base.filter((item) => {
     const roleOK = !item.roles || item.roles.includes(role)
     const featureOK = !item.feature || features[item.feature] !== false
     return roleOK && featureOK
