@@ -1,19 +1,11 @@
 import * as React from 'react';
 
-type Props = React.PropsWithChildren<{
-  className?: string;
-}>;
+type Props = React.PropsWithChildren<{ className?: string }>;
 
-// tiny helper to join class names without any deps
 function cx(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(' ');
 }
 
-/**
- * GlassCard
- * - Matches the look you used elsewhere: rounded-2xl, subtle border, soft shadow, glassy bg.
- * - No external utils required (no "@/lib/utils" dependency).
- */
 export function GlassCard({ className, children }: Props) {
   return (
     <div
@@ -28,5 +20,4 @@ export function GlassCard({ className, children }: Props) {
     </div>
   );
 }
-
 export default GlassCard;
