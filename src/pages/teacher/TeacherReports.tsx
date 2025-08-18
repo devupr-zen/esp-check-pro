@@ -1,4 +1,4 @@
-import { GlassCard } from "@/components/GlassCard";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { BarChart3 } from "lucide-react";
 import { requireRole } from "@/components/auth/RouteGuard";
 
