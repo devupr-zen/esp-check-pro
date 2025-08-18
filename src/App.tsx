@@ -12,14 +12,15 @@ import TeacherAuth from "./pages/auth/TeacherAuth";
 import SuperAdminAuth from "./pages/auth/SuperAdminAuth";
 import StudentDashboard from "./pages/student/StudentDashboard";
 import StudentAssessments from "./pages/student/StudentAssessments";
-import StudentAssessmentDetail from "./pages/student/StudentAssessmentDetail"; // NEW
+import StudentAssessmentDetail from "./pages/student/StudentAssessmentDetail";
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import ClassesList from "./pages/teacher/ClassesList";
 import ClassEdit from "./pages/teacher/ClassEdit";
 import TeacherStudents from "./pages/teacher/TeacherStudents";
 import TeacherAssessments from "./pages/teacher/TeacherAssessments";
-import TeacherAssessmentNew from "./pages/teacher/TeacherAssessmentNew"; // NEW
+import TeacherAssessmentNew from "./pages/teacher/TeacherAssessmentNew";
 import TeacherAssignmentDetail from "./pages/teacher/TeacherAssignmentDetail";
+import AssessmentAuthoring from "./pages/teacher/AssessmentAuthoring"; // NEW
 import TeacherLessons from "./pages/teacher/TeacherLessons";
 import TeacherReports from "./pages/teacher/TeacherReports";
 import TeacherBilling from "./pages/teacher/TeacherBilling";
@@ -52,7 +53,6 @@ const App = () => (
             <Route path="/dashboard" element={<MainLayout><Dashboard /></MainLayout>} />
             <Route path="/student/dashboard" element={<MainLayout><StudentDashboard /></MainLayout>} />
             <Route path="/student/assessments" element={<MainLayout><StudentAssessments /></MainLayout>} />
-            {/* NEW: student assessment detail */}
             <Route path="/student/assessments/:assignmentId" element={<MainLayout><StudentAssessmentDetail /></MainLayout>} />
             <Route path="/student/activities" element={<MainLayout><StudentActivities /></MainLayout>} />
             <Route path="/student/progress" element={<MainLayout><StudentProgress /></MainLayout>} />
@@ -61,10 +61,10 @@ const App = () => (
             <Route path="/teacher/classes/:id/edit" element={<MainLayout><ClassEdit /></MainLayout>} />
             <Route path="/teacher/students" element={<MainLayout><TeacherStudents /></MainLayout>} />
             <Route path="/teacher/assessments" element={<MainLayout><TeacherAssessments /></MainLayout>} />
-            {/* NEW: teacher create assignment */}
             <Route path="/teacher/assessments/new" element={<MainLayout><TeacherAssessmentNew /></MainLayout>} />
-            <Route path="/teacher/lessons" element={<MainLayout><TeacherLessons /></MainLayout>} />
             <Route path="/teacher/assessments/:assignmentId" element={<MainLayout><TeacherAssignmentDetail /></MainLayout>} />
+            <Route path="/teacher/assessments/author" element={<MainLayout><AssessmentAuthoring /></MainLayout>} />{/* NEW */}
+            <Route path="/teacher/lessons" element={<MainLayout><TeacherLessons /></MainLayout>} />
             <Route path="/teacher/reports" element={<MainLayout><TeacherReports /></MainLayout>} />
             <Route path="/teacher/billing" element={<MainLayout><TeacherBilling /></MainLayout>} />
             <Route path="/teacher/invites" element={<MainLayout><TeacherInvites /></MainLayout>} />
