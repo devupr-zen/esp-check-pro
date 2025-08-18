@@ -26,6 +26,9 @@ export function RouteGuard({ children, requiredRole }: RouteGuardProps) {
   if (!profile) {
     const returnTo = encodeURIComponent(location.pathname + location.search)
     return <Navigate to={`/login?returnTo=${returnTo}`} replace />
+    const returnTo = encodeURIComponent(location.pathname + location.search)
+    const authPath = requiredRole === "teacher" ? "/auth/teacher" : "/auth/student"
+    return <Navigate to={`${authPath}?returnTo=${returnTo}`} replace />
   }
 
   const role = profile.role as Role | undefined
