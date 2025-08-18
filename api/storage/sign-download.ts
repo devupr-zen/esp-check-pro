@@ -1,15 +1,10 @@
-// api/storage/sign-download.ts
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-if (!SUPABASE_URL || !SERVICE_KEY) {
-  throw new Error('Missing SUPABASE env vars (VITE_SUPABASE_URL/NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY)');
-}
-
-const admin = createClient(SUPABASE_URL, SERVICE_KEY);
+const admin = createClient(SUPABASE_URL!, SERVICE_KEY);
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
