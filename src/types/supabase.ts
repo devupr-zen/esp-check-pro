@@ -197,6 +197,48 @@ export type Database = {
           },
         ]
       }
+      esp_profiles: {
+        Row: {
+          created_at: string | null
+          id: number
+          improvement_areas: string[] | null
+          level: string | null
+          scores: Json | null
+          strengths: string[] | null
+          summary: string | null
+          top_goals: string[] | null
+          track: string | null
+          user_id: string
+          weaknesses: string[] | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          improvement_areas?: string[] | null
+          level?: string | null
+          scores?: Json | null
+          strengths?: string[] | null
+          summary?: string | null
+          top_goals?: string[] | null
+          track?: string | null
+          user_id: string
+          weaknesses?: string[] | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          improvement_areas?: string[] | null
+          level?: string | null
+          scores?: Json | null
+          strengths?: string[] | null
+          summary?: string | null
+          top_goals?: string[] | null
+          track?: string | null
+          user_id?: string
+          weaknesses?: string[] | null
+        }
+        Relationships: []
+      }
       lessons: {
         Row: {
           class_id: string | null
@@ -509,6 +551,92 @@ export type Database = {
         }
         Relationships: []
       }
+      superadmins: {
+        Row: {
+          user_id: string
+        }
+        Insert: {
+          user_id: string
+        }
+        Update: {
+          user_id?: string
+        }
+        Relationships: []
+      }
+      survey_questions: {
+        Row: {
+          active: boolean | null
+          code: string | null
+          created_at: string | null
+          id: string
+          options: string[] | null
+          required: boolean | null
+          section: string | null
+          text: string
+          track: string | null
+          type: string
+          weight: number | null
+        }
+        Insert: {
+          active?: boolean | null
+          code?: string | null
+          created_at?: string | null
+          id?: string
+          options?: string[] | null
+          required?: boolean | null
+          section?: string | null
+          text: string
+          track?: string | null
+          type: string
+          weight?: number | null
+        }
+        Update: {
+          active?: boolean | null
+          code?: string | null
+          created_at?: string | null
+          id?: string
+          options?: string[] | null
+          required?: boolean | null
+          section?: string | null
+          text?: string
+          track?: string | null
+          type?: string
+          weight?: number | null
+        }
+        Relationships: []
+      }
+      survey_responses: {
+        Row: {
+          answer: string
+          created_at: string | null
+          id: number
+          question_id: string
+          user_id: string
+        }
+        Insert: {
+          answer: string
+          created_at?: string | null
+          id?: number
+          question_id: string
+          user_id: string
+        }
+        Update: {
+          answer?: string
+          created_at?: string | null
+          id?: number
+          question_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_responses_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "survey_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       teacher_credentials: {
         Row: {
           created_at: string | null
@@ -541,7 +669,22 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      esp_profiles_latest: {
+        Row: {
+          created_at: string | null
+          id: number | null
+          improvement_areas: string[] | null
+          level: string | null
+          scores: Json | null
+          strengths: string[] | null
+          summary: string | null
+          top_goals: string[] | null
+          track: string | null
+          user_id: string | null
+          weaknesses: string[] | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       _gen_invite_code: {
@@ -632,6 +775,10 @@ export type Database = {
       }
       revoke_class_invite: {
         Args: { p_code: string }
+        Returns: undefined
+      }
+      set_user_role: {
+        Args: { new_role: string; target_email: string }
         Returns: undefined
       }
       use_student_invite: {

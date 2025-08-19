@@ -48,7 +48,6 @@ import {
   CreditCard,
   UserPlus,
   Activity,
-  KeyRound, // ✅ added for Superadmin Invites
 } from "lucide-react";
 
 /**
@@ -84,13 +83,11 @@ export const studentNav: NavItem[] = [
 /**
  * Superadmin navigation
  * - canonical home is /superadmin (aligns with RouteGuard)
- * - includes an Invites link for teacher invite generation
  * - includes a convenience link to legacy /admin if you still have it
  */
 export const adminNav: NavItem[] = [
   { href: "/superadmin", label: "Admin Overview", icon: Shield, roles: ["superadmin"], feature: "admin" },
   { href: "/superadmin/users", label: "Users", icon: Users, roles: ["superadmin"], feature: "admin" },
-  { href: "/superadmin/invites", label: "Invites", icon: KeyRound, roles: ["superadmin"], feature: "invites" }, // ✅ new
   { href: "/superadmin/reports", label: "Reports", icon: BarChart3, roles: ["superadmin"], feature: "admin" },
   // Optional legacy link — remove if you do not use /admin anymore:
   { href: "/admin", label: "Legacy Admin", icon: Shield, roles: ["superadmin"], feature: "admin" },

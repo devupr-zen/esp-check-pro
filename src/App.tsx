@@ -1,3 +1,4 @@
+// src/App.tsx
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -5,7 +6,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { AuthProvider } from "@/components/auth/AuthProvider";
+import RouteGuard from "@/components/auth/RouteGuard";
 import { supabaseEnvOk } from "@/lib/supabase";
+import OnboardingTrack from '@/pages/OnboardingTrack';
+import OnboardingSurvey from '@/pages/OnboardingSurvey';
 
 // Lazy pages (so a bug in one page can’t crash everything)
 import React, { Suspense } from "react";
@@ -62,32 +66,229 @@ const App = () => (
               <Route path="/auth/student" element={<StudentAuth />} />
               <Route path="/auth/teacher" element={<TeacherAuth />} />
               <Route path="/auth/superadmin" element={<SuperAdminAuth />} />
+              <Route path="/onboarding/track" element={<OnboardingTrack />} />
+              <Route path="/onboarding/survey" element={<OnboardingSurvey />} />
 
-              {/* Protected routes */}
-              <Route path="/dashboard" element={<MainLayout><Dashboard /></MainLayout>} />
-              <Route path="/student/dashboard" element={<MainLayout><StudentDashboard /></MainLayout>} />
-              <Route path="/student/assessments" element={<MainLayout><StudentAssessments /></MainLayout>} />
-              <Route path="/student/assessments/:assignmentId" element={<MainLayout><StudentAssessmentDetail /></MainLayout>} />
-              <Route path="/student/activities" element={<MainLayout><StudentActivities /></MainLayout>} />
-              <Route path="/student/progress" element={<MainLayout><StudentProgress /></MainLayout>} />
+              {/* Protected (any signed-in role) */}
+              <Route
+                path="/dashboard"
+                element={
+                  <RouteGuard>
+                    <MainLayout>
+                      <Dashboard />
+                    </MainLayout>
+                  </RouteGuard>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <RouteGuard>
+                    <MainLayout>
+                      <Settings />
+                    </MainLayout>
+                  </RouteGuard>
+                }
+              />
 
-              <Route path="/teacher/dashboard" element={<MainLayout><TeacherDashboard /></MainLayout>} />
-              <Route path="/teacher/classes" element={<MainLayout><ClassesList /></MainLayout>} />
-              <Route path="/teacher/classes/:id/edit" element={<MainLayout><ClassEdit /></MainLayout>} />
-              <Route path="/teacher/students" element={<MainLayout><TeacherStudents /></MainLayout>} />
-              <Route path="/teacher/assessments" element={<MainLayout><TeacherAssessments /></MainLayout>} />
-              <Route path="/teacher/assessments/new" element={<MainLayout><TeacherAssessmentNew /></MainLayout>} />
-              <Route path="/teacher/assessments/:assignmentId" element={<MainLayout><TeacherAssignmentDetail /></MainLayout>} />
-              <Route path="/teacher/assessments/author" element={<MainLayout><AssessmentAuthoring /></MainLayout>} />
-              <Route path="/teacher/lessons" element={<MainLayout><TeacherLessons /></MainLayout>} />
-              <Route path="/teacher/reports" element={<MainLayout><TeacherReports /></MainLayout>} />
-              <Route path="/teacher/billing" element={<MainLayout><TeacherBilling /></MainLayout>} />
-              <Route path="/teacher/invites" element={<MainLayout><TeacherInvites /></MainLayout>} />
+              {/* Student-only */}
+              <Route
+                path="/student/dashboard"
+                element={
+                  <RouteGuard requireRole="student">
+                    <MainLayout>
+                      <StudentDashboard />
+                    </MainLayout>
+                  </RouteGuard>
+                }
+              />
+              <Route
+                path="/student/assessments"
+                element={
+                  <RouteGuard requireRole="student">
+                    <MainLayout>
+                      <StudentAssessments />
+                    </MainLayout>
+                  </RouteGuard>
+                }
+              />
+              <Route
+                path="/student/assessments/:assignmentId"
+                element={
+                  <RouteGuard requireRole="student">
+                    <MainLayout>
+                      <StudentAssessmentDetail />
+                    </MainLayout>
+                  </RouteGuard>
+                }
+              />
+              <Route
+                path="/student/activities"
+                element={
+                  <RouteGuard requireRole="student">
+                    <MainLayout>
+                      <StudentActivities />
+                    </MainLayout>
+                  </RouteGuard>
+                }
+              />
+              <Route
+                path="/student/progress"
+                element={
+                  <RouteGuard requireRole="student">
+                    <MainLayout>
+                      <StudentProgress />
+                    </MainLayout>
+                  </RouteGuard>
+                }
+              />
 
+              {/* Teacher-only */}
+              <Route
+                path="/teacher/dashboard"
+                element={
+                  <RouteGuard requireRole="teacher">
+                    <MainLayout>
+                      <TeacherDashboard />
+                    </MainLayout>
+                  </RouteGuard>
+                }
+              />
+              <Route
+                path="/teacher/classes"
+                element={
+                  <RouteGuard requireRole="teacher">
+                    <MainLayout>
+                      <ClassesList />
+                    </MainLayout>
+                  </RouteGuard>
+                }
+              />
+              <Route
+                path="/teacher/classes/:id/edit"
+                element={
+                  <RouteGuard requireRole="teacher">
+                    <MainLayout>
+                      <ClassEdit />
+                    </MainLayout>
+                  </RouteGuard>
+                }
+              />
+              <Route
+                path="/teacher/students"
+                element={
+                  <RouteGuard requireRole="teacher">
+                    <MainLayout>
+                      <TeacherStudents />
+                    </MainLayout>
+                  </RouteGuard>
+                }
+              />
+              <Route
+                path="/teacher/assessments"
+                element={
+                  <RouteGuard requireRole="teacher">
+                    <MainLayout>
+                      <TeacherAssessments />
+                    </MainLayout>
+                  </RouteGuard>
+                }
+              />
+              <Route
+                path="/teacher/assessments/new"
+                element={
+                  <RouteGuard requireRole="teacher">
+                    <MainLayout>
+                      <TeacherAssessmentNew />
+                    </MainLayout>
+                  </RouteGuard>
+                }
+              />
+              <Route
+                path="/teacher/assessments/:assignmentId"
+                element={
+                  <RouteGuard requireRole="teacher">
+                    <MainLayout>
+                      <TeacherAssignmentDetail />
+                    </MainLayout>
+                  </RouteGuard>
+                }
+              />
+              <Route
+                path="/teacher/assessments/author"
+                element={
+                  <RouteGuard requireRole="teacher">
+                    <MainLayout>
+                      <AssessmentAuthoring />
+                    </MainLayout>
+                  </RouteGuard>
+                }
+              />
+              <Route
+                path="/teacher/lessons"
+                element={
+                  <RouteGuard requireRole="teacher">
+                    <MainLayout>
+                      <TeacherLessons />
+                    </MainLayout>
+                  </RouteGuard>
+                }
+              />
+              <Route
+                path="/teacher/reports"
+                element={
+                  <RouteGuard requireRole="teacher">
+                    <MainLayout>
+                      <TeacherReports />
+                    </MainLayout>
+                  </RouteGuard>
+                }
+              />
+              <Route
+                path="/teacher/billing"
+                element={
+                  <RouteGuard requireRole="teacher">
+                    <MainLayout>
+                      <TeacherBilling />
+                    </MainLayout>
+                  </RouteGuard>
+                }
+              />
+              <Route
+                path="/teacher/invites"
+                element={
+                  <RouteGuard requireRole="teacher">
+                    <MainLayout>
+                      <TeacherInvites />
+                    </MainLayout>
+                  </RouteGuard>
+                }
+              />
+
+              {/* Superadmin-only */}
+              <Route
+                path="/admin"
+                element={
+                  <RouteGuard requireRole="superadmin">
+                    <MainLayout>
+                      <AdminHub />
+                    </MainLayout>
+                  </RouteGuard>
+                }
+              />
+              <Route
+                path="/superadmin"
+                element={
+                  <RouteGuard requireRole="superadmin">
+                    <MainLayout>
+                      <SuperAdminOverview />
+                    </MainLayout>
+                  </RouteGuard>
+                }
+              />
+
+              {/* Public utility */}
               <Route path="/redeem/:code" element={<RedeemInvite />} />
-              <Route path="/settings" element={<MainLayout><Settings /></MainLayout>} />
-              <Route path="/admin" element={<MainLayout><AdminHub /></MainLayout>} />
-              <Route path="/superadmin" element={<MainLayout><SuperAdminOverview /></MainLayout>} />
 
               {/* CATCH-ALL */}
               <Route path="*" element={<NotFound />} />
