@@ -12,7 +12,7 @@ CREATE TABLE public.profiles (
   track TEXT DEFAULT 'General', -- General or Business for students
   avatar_url TEXT,
   is_active BOOLEAN DEFAULT true,
-  password_changed BOOLEAN DEFAULT false, -- For teachers to track if they changed from pre-password
+  password_changed BOOLEAN DEFAULT false, -- For teachers to track if they changed from password
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
@@ -32,11 +32,11 @@ CREATE TABLE public.invite_codes (
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 
--- Create teacher pre-passwords table
+-- Create teacher passwords table
 CREATE TABLE public.teacher_credentials (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   email TEXT NOT NULL UNIQUE,
-  pre_password TEXT NOT NULL,
+  invite_code TEXT NOT NULL,
   is_used BOOLEAN DEFAULT false,
   created_by UUID REFERENCES auth.users(id),
   used_at TIMESTAMP WITH TIME ZONE,

@@ -16,7 +16,7 @@ if (supabaseEnvOk) {
 } else {
   const msg =
     '[Supabase] Missing VITE_SUPABASE_URL and/or VITE_SUPABASE_ANON_KEY. Set them in Vercel → Project → Settings → Environment Variables.';
-  // eslint-disable-next-line no-console
+   
   console.error(msg);
   // Safe proxy so any accidental use throws a readable error (prevents white screen)
   supabase = new Proxy({} as SupabaseClient, {

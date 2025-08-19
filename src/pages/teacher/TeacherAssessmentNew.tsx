@@ -159,9 +159,9 @@ export default function TeacherAssessmentNew() {
                     alert(`Create assessment failed: ${e.message ?? e}`);
                   }
                 }}
-                disabled={createAssessment.isLoading}
+                disabled={createAssessment.isPending}
               >
-                {createAssessment.isLoading ? (
+                {createAssessment.isPending ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <Save className="mr-2 h-4 w-4" />
@@ -200,9 +200,9 @@ export default function TeacherAssessmentNew() {
                 alert(`Create assignment failed: ${e.message ?? e}`);
               }
             }}
-            disabled={!canSubmit || createAssignment.isLoading}
+            disabled={!canSubmit || createAssignment.isPending}
           >
-            {createAssignment.isLoading ? (
+            {createAssignment.isPending? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
               <Save className="mr-2 h-4 w-4" />

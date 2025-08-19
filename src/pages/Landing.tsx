@@ -1,3 +1,4 @@
+// src/pages/Landing.tsx
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/reusable/GlassCard";
 import { useNavigate } from "react-router-dom";
@@ -14,8 +15,10 @@ export default function Landing() {
     if (loading) return;
     if (!profile) return;
     const role = profile.role;
-    if (role === "teacher" || role === "superadmin") {
+    if (role === "teacher") {
       navigate("/teacher/dashboard", { replace: true });
+    } else if (role === "superadmin") {
+      navigate("/superadmin", { replace: true });
     } else {
       navigate("/student/dashboard", { replace: true });
     }
@@ -41,7 +44,9 @@ export default function Landing() {
           </p>
         </header>
 
+        {/* Student + Teacher Options */}
         <section className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
+          {/* Student */}
           <GlassCard
             className="p-8 text-center hover:scale-105 transition-transform duration-200 focus-within:ring-2 focus-within:ring-primary/40 outline-none cursor-pointer"
             role="button"
@@ -64,6 +69,7 @@ export default function Landing() {
             </Button>
           </GlassCard>
 
+          {/* Teacher */}
           <GlassCard
             className="p-8 text-center hover:scale-105 transition-transform duration-200 focus-within:ring-2 focus-within:ring-primary/40 outline-none cursor-pointer"
             role="button"
@@ -87,17 +93,20 @@ export default function Landing() {
           </GlassCard>
         </section>
 
-        <div className="text-center mt-8">
-          <Button
-            variant="ghost"
-            onClick={go("/admin")}
-            className="text-muted-foreground hover:text-foreground"
-            aria-label="Administrator access"
-          >
-            <ShieldCheck className="w-4 h-4 mr-2" />
-            Administrator Access
-          </Button>
-        </div>
+        {/* Administrator Access → only visible to superadmins */}
+        {profile?.role === "superadmin" && (
+          <div className="text-center mt-8">
+            <Button
+              variant="ghost"
+              onClick={go("/superadmin")}
+              className="text-muted-foreground hover:text-foreground"
+              aria-label="Administrator access"
+            >
+              <ShieldCheck className="w-4 h-4 mr-2" />
+              Administrator Access
+            </Button>
+          </div>
+        )}
       </div>
     </main>
   );

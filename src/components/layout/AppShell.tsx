@@ -1,96 +1,96 @@
-import { useState, useEffect } from "react"
-import { useAuth } from "@/components/auth/AuthProvider"
-import { TEACHER_NAV } from "@/config/navigation/teacherNav"
-import { STUDENT_NAV } from "@/config/navigation/studentNav"
-import { useSidebarState } from "@/hooks/useSidebarState"
-import { useIsMobile } from "@/hooks/use-mobile"
-import { TopBar } from "./TopBar"
-import { Sidebar } from "./Sidebar"
+// src/components/shell/AppShell.tsx
+import React, { useEffect, useMemo, useState } from "react";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useSidebarState } from "@/hooks/useSidebarState";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { TopBar } from "./TopBar";
+import { Sidebar } from "./Sidebar";
+import {
+  getNavForRole,
+  defaultFeatures,
+  type Role,
+  type FeatureFlags,
+} from "@/config/navigation";
 
 interface AppShellProps {
-  children: React.ReactNode
+  children: React.ReactNode;
+  /**
+   * Optional feature flags to hide/show certain nav items at runtime.
+   * Defaults to `defaultFeatures`.
+   */
+  features?: FeatureFlags;
 }
 
-export function AppShell({ children }: AppShellProps) {
-  const { profile } = useAuth()
-  const { isCollapsed, toggle } = useSidebarState()
-  const isMobile = useIsMobile()
-  const [showMobileOverlay, setShowMobileOverlay] = useState(false)
+export function AppShell({ children, features = defaultFeatures }: AppShellProps) {
+  const { profile, loading } = useAuth();
+  const { isCollapsed, toggle } = useSidebarState();
+  const isMobile = useIsMobile();
+  const [showMobileOverlay, setShowMobileOverlay] = useState(false);
 
-  // Get navigation based on user role
-  const navigation = profile?.role === "teacher" ? TEACHER_NAV : STUDENT_NAV
+  // Resolve role: prefer profile.role, fallback to remembered intent, default student
+  const role: Role = useMemo(() => {
+    if (profile?.role) return profile.role as Role;
+    const remembered =
+      (typeof window !== "undefined"
+        ? (localStorage.getItem("upraizenRole") as Role | null)
+        : null) || "student";
+    return remembered;
+  }, [profile?.role]);
 
-  // Handle mobile overlay
-  const handleMobileToggle = () => {
-    if (isMobile) {
-      setShowMobileOverlay(!showMobileOverlay)
-    } else {
-      toggle()
-    }
+  // Build role-scoped navigation
+  const navigation = useMemo(() => getNavForRole(role, features), [role, features]);
+
+  // Toggle handler: drawer on mobile, collapse on desktop
+  const handleMenuToggle = () => {
+    if (isMobile) setShowMobileOverlay((v) => !v);
+    else toggle();
+  };
+
+  // Optional: if auth is still loading, render a minimal skeleton for layout stability
+  if (loading) {
+    return (
+      <div className="min-h-screen flex w-full bg-background">
+        <aside className="hidden lg:block w-72 h-screen bg-background/80 border-r" />
+        <div className="flex-1 flex flex-col">
+          <div className="h-16 border-b bg-background/60" />
+          <main className="flex-1 p-6">
+            <div className="animate-pulse h-6 w-40 bg-muted rounded mb-4" />
+            <div className="animate-pulse h-4 w-64 bg-muted rounded" />
+          </main>
+        </div>
+      </div>
+    );
   }
-
-  // Close mobile overlay when route changes
-  useEffect(() => {
-    setShowMobileOverlay(false)
-  }, [window.location.pathname])
-
-  // Close mobile overlay when clicking outside
-  useEffect(() => {
-    if (!showMobileOverlay) return
-
-    const handleClickOutside = (event: MouseEvent) => {
-      const sidebar = document.getElementById("app-sidebar")
-      if (sidebar && !sidebar.contains(event.target as Node)) {
-        setShowMobileOverlay(false)
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [showMobileOverlay])
-
-  // Focus trap for mobile overlay
-  useEffect(() => {
-    if (!showMobileOverlay) return
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setShowMobileOverlay(false)
-      }
-    }
-
-    document.addEventListener("keydown", handleKeyDown)
-    return () => document.removeEventListener("keydown", handleKeyDown)
-  }, [showMobileOverlay])
 
   return (
     <div className="min-h-screen flex w-full bg-background">
-      {/* Mobile Overlay */}
+      {/* Mobile overlay scrim (click handled in Sidebar too; this is just the dim layer) */}
       {isMobile && showMobileOverlay && (
-        <div 
+        <div
           className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
           onClick={() => setShowMobileOverlay(false)}
+          aria-hidden="true"
         />
       )}
 
       {/* Sidebar */}
       <Sidebar
+        key={role} // reset internal state if role changes
         navigation={navigation}
-        isCollapsed={isMobile ? false : isCollapsed}
+        isCollapsed={isCollapsed}
         isMobile={isMobile}
         showMobileOverlay={showMobileOverlay}
+        setShowMobileOverlay={setShowMobileOverlay}
       />
 
-      {/* Main Content */}
+      {/* Main content */}
       <div className="flex-1 flex flex-col">
-        <TopBar 
-          onMenuToggle={handleMobileToggle}
+        <TopBar
+          onMenuToggle={handleMenuToggle}
           isMenuOpen={isMobile ? showMobileOverlay : !isCollapsed}
         />
-        <main className="flex-1 p-6 overflow-auto scrollbar-thin">
-          {children}
-        </main>
+        <main className="flex-1 p-6 overflow-auto scrollbar-thin">{children}</main>
       </div>
     </div>
-  )
+  );
 }

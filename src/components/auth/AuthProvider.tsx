@@ -1,19 +1,22 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';   // ✅ use singleton
+import type { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';   // ✅ singleton
 import { useNavigate, useLocation } from 'react-router-dom';
 
 interface Profile {
   id: string;
-  user_id: string;
-  email: string;
+  // ⚠️ In your schema profiles.id === auth.user.id; user_id may not exist.
+  //    Keep it optional so other parts of the app compiling against it won't break.
+  user_id?: string;
+  // Email/flags may not exist in your table yet → keep optional to avoid TS errors.
+  email?: string;
   first_name?: string;
   last_name?: string;
   role: 'student' | 'teacher' | 'superadmin';
   track?: string;
   avatar_url?: string;
-  is_active: boolean;
-  password_changed: boolean;
+  is_active?: boolean;
+  password_changed?: boolean;
 }
 
 interface AuthContextType {
@@ -34,9 +37,7 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };
 
@@ -52,83 +53,101 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Helper: read ?returnTo=... from current URL
+  const getReturnTo = () => {
+    const rt = new URLSearchParams(location.search).get('returnTo');
+    return rt && rt.startsWith('/') ? rt : null;
+  };
+
   useEffect(() => {
-    // Set up auth state listener
+    // --- Auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          // Fetch user profile
-          setTimeout(async () => {
-            const { data: profileData } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('user_id', session.user.id)
-              .single();
-            
-            setProfile(profileData);
-            
-            // Handle redirects based on auth state and profile
-            if (profileData) {
-              const isAuthPage = location.pathname.startsWith('/auth');
-              const isLandingPage = location.pathname === '/';
-              
-              if (isAuthPage || isLandingPage) {
-                // Redirect authenticated users away from auth pages
-                if (profileData.role === 'teacher' && !profileData.password_changed) {
-                  // Teacher needs to change password
-                  navigate('/auth/teacher');
-                } else {
-                  // Redirect to appropriate dashboard based on role
-                  if (profileData.role === 'student') {
-                    navigate('/student/dashboard');
-                  } else if (profileData.role === 'teacher') {
-                    navigate('/teacher/dashboard');
-                  } else if (profileData.role === 'superadmin') {
-                    navigate('/superadmin');
-                  }
+      async (_event, newSession) => {
+        setSession(newSession ?? null);
+        setUser(newSession?.user ?? null);
+
+        if (newSession?.user) {
+          // 🔧 UPDATED: profiles keyed by id === auth.user.id
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', newSession.user.id)
+            .single();
+
+          setProfile(profileData ?? null);
+
+          // Redirect logic (kept minimal, with returnTo support)
+          if (profileData) {
+            const isAuthPage = location.pathname.startsWith('/auth');
+            const isLandingPage = location.pathname === '/';
+            const returnTo = getReturnTo();
+
+            if (isAuthPage || isLandingPage) {
+              if (profileData.role === 'teacher' && profileData.password_changed === false) {
+                // Teacher must change password → keep them on teacher auth
+                navigate('/auth/teacher', { replace: true });
+              } else if (returnTo) {
+                navigate(returnTo, { replace: true });
+              } else {
+                // Route by role (preserve your existing destinations)
+                if (profileData.role === 'student') {
+                  navigate('/student/dashboard', { replace: true });
+                } else if (profileData.role === 'teacher') {
+                  navigate('/teacher/dashboard', { replace: true });
+                } else if (profileData.role === 'superadmin') {
+                  navigate('/superadmin', { replace: true });
                 }
               }
             }
-          }, 0);
+          }
         } else {
           setProfile(null);
-          // Redirect unauthenticated users to landing page if they're on protected routes
-          const protectedRoutes = ['/dashboard', '/student', '/teacher', '/superadmin', '/assessments', '/activities', '/reports', '/profile'];
-          const isProtectedRoute = protectedRoutes.some(route => location.pathname.startsWith(route));
-          
-          if (isProtectedRoute) {
-            navigate('/');
-          }
+
+          // Unauthed on protected routes → send to landing
+          const protectedRoutes = [
+            '/dashboard',
+            '/student',
+            '/teacher',
+            '/superadmin',
+            '/assessments',
+            '/activities',
+            '/reports',
+            '/profile'
+          ];
+          const isProtectedRoute = protectedRoutes.some(route =>
+            location.pathname.startsWith(route)
+          );
+
+          if (isProtectedRoute) navigate('/', { replace: true });
         }
-        
+
         setLoading(false);
       }
     );
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
+    // --- Initial session check (on mount)
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      setSession(session ?? null);
       setUser(session?.user ?? null);
-      
+
       if (session?.user) {
-        supabase
+        // 🔧 UPDATED: profiles keyed by id === auth.user.id
+        const { data: profileData } = await supabase
           .from('profiles')
           .select('*')
-          .eq('user_id', session.user.id)
-          .single()
-          .then(({ data: profileData }) => {
-            setProfile(profileData);
-            setLoading(false);
-          });
-      } else {
-        setLoading(false);
+          .eq('id', session.user.id)
+          .single();
+
+        setProfile(profileData ?? null);
       }
+
+      setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate, location.pathname]);
 
   const signOut = async () => {
@@ -137,11 +156,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(null);
       setSession(null);
       setProfile(null);
-      navigate('/');
+      navigate('/', { replace: true });
     }
   };
 
-  const value = {
+  const value: AuthContextType = {
     user,
     session,
     profile,

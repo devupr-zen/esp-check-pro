@@ -106,7 +106,7 @@ export default function TeacherStudents() {
           console.error("class_members fetch error:", mErr);
         } else {
           const userIds = Array.from(new Set((members ?? []).map((m: any) => m.user_id)));
-          let profilesMap = new Map<string, { first_name: string | null; last_name: string | null; email: string }>();
+          const profilesMap = new Map<string, { first_name: string | null; last_name: string | null; email: string }>();
           if (userIds.length > 0) {
             const { data: profs, error: pErr } = await supabase
               .from("profiles")

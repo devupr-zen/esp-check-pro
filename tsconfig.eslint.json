@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "api/**/*.ts",
+    "api/**/*.tsx",
+    "supabase/functions/**/*.ts",
+    "supabase/functions/**/*.tsx",
+    "vite.config.ts",
+    "tailwind.config.ts"
+  ]
+}
