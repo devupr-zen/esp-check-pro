@@ -12,6 +12,11 @@
 		{ "src": "/favicon\\.ico", "dest": "/favicon.ico" },
 		{ "src": "/manifest\\.webmanifest", "dest": "/manifest.webmanifest" },
 
-		{ "src": "/(.*)", "dest": "/index.html" }
+		{ "src": "/(.*)", "dest": "/index.html" },
+
+        {
+            "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+        }
+
 	]
 }
