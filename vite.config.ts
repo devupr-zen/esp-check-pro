@@ -4,10 +4,9 @@ import path from "path";
 import { defineConfig } from "vite";
 
 export default defineConfig(({ mode }) => ({
-	server: { host: "::", port: 8080 },
-	plugins: [react(), mode === "development" && componentTagger()].filter(
-		Boolean,
-	),
-	resolve: { alias: { "@": path.resolve(__dirname, "./src") } },
-	build: { sourcemap: true, chunkSizeWarningLimit: 1500 },
+  base: "/",                                // ensure correct asset paths on Vercel/custom domains
+  server: { host: "::", port: 8080 },       // local dev (ok as-is)
+  plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+  resolve: { alias: { "@": path.resolve(__dirname, "src") } },
+  build: { sourcemap: true, chunkSizeWarningLimit: 1500 }, // dist is default
 }));
