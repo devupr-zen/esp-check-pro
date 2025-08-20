@@ -933,6 +933,30 @@ export type Database = {
         }
         Relationships: []
       }
+      teacher_subscriptions: {
+        Row: {
+          created_at: string | null
+          status: string
+          trial_end: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          status?: string
+          trial_end: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          status?: string
+          trial_end?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       esp_profiles_latest: {
@@ -948,6 +972,27 @@ export type Database = {
           track: string | null
           user_id: string | null
           weaknesses: string[] | null
+        }
+        Relationships: []
+      }
+      teacher_subscription_status: {
+        Row: {
+          days_left: number | null
+          status: string | null
+          trial_end: string | null
+          user_id: string | null
+        }
+        Insert: {
+          days_left?: never
+          status?: string | null
+          trial_end?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          days_left?: never
+          status?: string | null
+          trial_end?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -1026,7 +1071,7 @@ export type Database = {
         Returns: boolean
       }
       is_superadmin: {
-        Args: { uid?: string }
+        Args: { uid: string }
         Returns: boolean
       }
       is_superadmin_role: {

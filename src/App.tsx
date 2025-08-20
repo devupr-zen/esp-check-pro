@@ -12,6 +12,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { supabaseEnvOk } from "@/lib/supabase";
 import OnboardingSurvey from "@/pages/OnboardingSurvey";
 import OnboardingTrack from "@/pages/OnboardingTrack";
+import AssessmentRunner from "@/pages/student/AssessmentRunner";
+import SuperadminInvites from "@/pages/superadmin/SuperadminInvites";
 
 // Lazy imports
 const Landing = React.lazy(() => import("./pages/Landing"));
@@ -69,6 +71,7 @@ const App = () => (
               <Route path="/auth/superadmin" element={<SuperAdminAuth />} />
               <Route path="/onboarding/track" element={<OnboardingTrack />} />
               <Route path="/onboarding/survey" element={<OnboardingSurvey />} />
+              <Route path="/student/assessment/run" element={<AssessmentRunner />} />
 
               {/* Protected (any signed-in role) */}
               <Route
@@ -287,6 +290,16 @@ const App = () => (
                   <RouteGuard requireRole="superadmin">
                     <MainLayout>
                       <SuperAdminOverview />
+                    </MainLayout>
+                  </RouteGuard>
+                }
+              />
+              <Route
+                path="/superadmin/invites"
+                element={
+                  <RouteGuard requireRole="superadmin">
+                    <MainLayout>
+                      <SuperadminInvites />
                     </MainLayout>
                   </RouteGuard>
                 }
