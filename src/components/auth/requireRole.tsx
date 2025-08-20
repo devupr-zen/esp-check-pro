@@ -1,5 +1,5 @@
 // src/components/auth/requireRole.tsx
-import React from "react";
+import type React from "react";
 import RouteGuard, { type Role } from "@/components/auth/RouteGuard";
 
 /**
@@ -9,15 +9,15 @@ import RouteGuard, { type Role } from "@/components/auth/RouteGuard";
  *   export default requireRole("teacher")(TeacherDashboard)
  */
 export const requireRole = (role: Role) =>
-  function withGuard<P>(Component: React.ComponentType<P>) {
-    return function Guarded(props: P) {
-      return (
-        <RouteGuard requireRole={role}>
-          <Component {...props} />
-        </RouteGuard>
-      );
-    };
-  };
+	function withGuard<P>(Component: React.ComponentType<P>) {
+		return function Guarded(props: P) {
+			return (
+				<RouteGuard requireRole={role}>
+					<Component {...props} />
+				</RouteGuard>
+			);
+		};
+	};
 
 /**
  * Wrapper component version for JSX usage.
@@ -28,10 +28,10 @@ export const requireRole = (role: Role) =>
  *   </RequireRole>
  */
 type Props = {
-  role: Role; // renamed to match RouteGuard
-  children: React.ReactNode;
+	role: Role; // renamed to match RouteGuard
+	children: React.ReactNode;
 };
 
 export default function RequireRole({ role, children }: Props) {
-  return <RouteGuard requireRole={role}>{children}</RouteGuard>;
+	return <RouteGuard requireRole={role}>{children}</RouteGuard>;
 }

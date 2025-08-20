@@ -4,33 +4,40 @@ import { Resend } from "npm:resend@2.0.0";
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+	"Access-Control-Allow-Origin": "*",
+	"Access-Control-Allow-Headers":
+		"authorization, x-client-info, apikey, content-type",
 };
 
 interface StudentInviteRequest {
-  studentName: string;
-  email: string;
-  inviteCode: string;
-  className: string;
-  teacherName: string;
+	studentName: string;
+	email: string;
+	inviteCode: string;
+	className: string;
+	teacherName: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+	if (req.method === "OPTIONS") {
+		return new Response(null, { headers: corsHeaders });
+	}
 
-  try {
-    const { studentName, email, inviteCode, className, teacherName }: StudentInviteRequest = await req.json();
+	try {
+		const {
+			studentName,
+			email,
+			inviteCode,
+			className,
+			teacherName,
+		}: StudentInviteRequest = await req.json();
 
-    const inviteUrl = `${Deno.env.get("SUPABASE_URL")?.replace("pmhlsouvemmzhxhsslfm.supabase.co", "pmhlsouvemmzhxhsslfm.lovable.app")}/auth/student?code=${inviteCode}`;
+		const inviteUrl = `${Deno.env.get("SUPABASE_URL")?.replace("pmhlsouvemmzhxhsslfm.supabase.co", "pmhlsouvemmzhxhsslfm.lovable.app")}/auth/student?code=${inviteCode}`;
 
-    const emailResponse = await resend.emails.send({
-      from: "English Learning Platform <onboarding@resend.dev>",
-      to: [email],
-      subject: `You're invited to join ${className}!`,
-      html: `
+		const emailResponse = await resend.emails.send({
+			from: "English Learning Platform <onboarding@resend.dev>",
+			to: [email],
+			subject: `You're invited to join ${className}!`,
+			html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h1 style="color: #2563eb; text-align: center;">You're Invited!</h1>
           
@@ -62,27 +69,24 @@ const handler = async (req: Request): Promise<Response> => {
           </p>
         </div>
       `,
-    });
+		});
 
-    console.log("Student invite email sent successfully:", emailResponse);
+		console.log("Student invite email sent successfully:", emailResponse);
 
-    return new Response(JSON.stringify(emailResponse), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
-    });
-  } catch (error: any) {
-    console.error("Error in send-student-invite function:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
-    );
-  }
+		return new Response(JSON.stringify(emailResponse), {
+			status: 200,
+			headers: {
+				"Content-Type": "application/json",
+				...corsHeaders,
+			},
+		});
+	} catch (error: any) {
+		console.error("Error in send-student-invite function:", error);
+		return new Response(JSON.stringify({ error: error.message }), {
+			status: 500,
+			headers: { "Content-Type": "application/json", ...corsHeaders },
+		});
+	}
 };
 
 serve(handler);

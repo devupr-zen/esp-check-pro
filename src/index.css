@@ -5,176 +5,181 @@
 /* Upraizen ESPCheck Pro Design System */
 
 @layer base {
-  :root {
-    /* Brand Colors - Premium Assessment Platform */
-    --primary: 261 77% 58%;        /* #5E4AE3 - Purple */
-    --primary-foreground: 0 0% 100%;
-    
-    --accent: 191 100% 50%;        /* #00CFFD - Electric Blue */
-    --accent-foreground: 0 0% 100%;
-    
-    --support: 353 100% 67%;       /* #FF5A76 - Coral */
-    --support-foreground: 0 0% 100%;
-    
-    --neutral: 228 33% 97%;        /* #F5F6FA - Light Gray */
-    --text: 240 20% 15%;           /* #1F1F29 - Dark Text */
-    
-    /* Data Visualization Colors */
-    --chart-teal: 174 77% 64%;     /* #6EDBD5 */
-    --chart-orange: 38 100% 69%;   /* #FFC866 */
-    --chart-purple: 227 68% 70%;   /* #7C8BE3 */
-    --chart-lavender: 287 51% 74%; /* #C8A2E0 */
-    
-    /* Glassmorphism Card System */
-    --glass-background: 0 0% 100% / 0.8;
-    --glass-border: 0 0% 100% / 0.2;
-    --glass-shadow: 0 0% 0% / 0.1;
-    
-    /* Semantic Colors */
-    --background: 228 33% 97%;     /* Neutral background */
-    --foreground: 240 20% 15%;     /* Text color */
-    
-    --card: 0 0% 100% / 0.8;       /* Glass cards */
-    --card-foreground: 240 20% 15%;
-    
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 20% 15%;
-    
-    --secondary: 261 77% 95%;      /* Light purple */
-    --secondary-foreground: 261 77% 25%;
-    
-    --muted: 228 33% 90%;
-    --muted-foreground: 240 10% 50%;
-    
-    --destructive: 353 100% 67%;   /* Support color for errors */
-    --destructive-foreground: 0 0% 100%;
-    
-    --border: 228 33% 90%;
-    --input: 0 0% 100% / 0.8;
-    --ring: 261 77% 58%;
-    
-    --radius: 10px;                /* Consistent 10px radius */
-    
-    /* Status Colors */
-    --info: 191 100% 50%;          /* Accent blue */
-    --info-foreground: 0 0% 100%;
-    
-    --warning: 353 100% 67%;       /* Support coral */
-    --warning-foreground: 0 0% 100%;
-    
-    --success: 174 77% 64%;        /* Chart teal */
-    --success-foreground: 0 0% 100%;
-    
-    /* Sidebar System */
-    --sidebar-background: 0 0% 100% / 0.9;
-    --sidebar-foreground: 240 20% 15%;
-    --sidebar-primary: 261 77% 58%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 261 77% 95%;
-    --sidebar-accent-foreground: 261 77% 25%;
-    --sidebar-border: 0 0% 100% / 0.2;
-    --sidebar-ring: 261 77% 58%;
-  }
+	:root {
+		/* Brand Colors - Premium Assessment Platform */
+		--primary: 261 77% 58%; /* #5E4AE3 - Purple */
+		--primary-foreground: 0 0% 100%;
 
+		--accent: 191 100% 50%; /* #00CFFD - Electric Blue */
+		--accent-foreground: 0 0% 100%;
+
+		--support: 353 100% 67%; /* #FF5A76 - Coral */
+		--support-foreground: 0 0% 100%;
+
+		--neutral: 228 33% 97%; /* #F5F6FA - Light Gray */
+		--text: 240 20% 15%; /* #1F1F29 - Dark Text */
+
+		/* Data Visualization Colors */
+		--chart-teal: 174 77% 64%; /* #6EDBD5 */
+		--chart-orange: 38 100% 69%; /* #FFC866 */
+		--chart-purple: 227 68% 70%; /* #7C8BE3 */
+		--chart-lavender: 287 51% 74%; /* #C8A2E0 */
+
+		/* Glassmorphism Card System */
+		--glass-background: 0 0% 100% / 0.8;
+		--glass-border: 0 0% 100% / 0.2;
+		--glass-shadow: 0 0% 0% / 0.1;
+
+		/* Semantic Colors */
+		--background: 228 33% 97%; /* Neutral background */
+		--foreground: 240 20% 15%; /* Text color */
+
+		--card: 0 0% 100% / 0.8; /* Glass cards */
+		--card-foreground: 240 20% 15%;
+
+		--popover: 0 0% 100%;
+		--popover-foreground: 240 20% 15%;
+
+		--secondary: 261 77% 95%; /* Light purple */
+		--secondary-foreground: 261 77% 25%;
+
+		--muted: 228 33% 90%;
+		--muted-foreground: 240 10% 50%;
+
+		--destructive: 353 100% 67%; /* Support color for errors */
+		--destructive-foreground: 0 0% 100%;
+
+		--border: 228 33% 90%;
+		--input: 0 0% 100% / 0.8;
+		--ring: 261 77% 58%;
+
+		--radius: 10px; /* Consistent 10px radius */
+
+		/* Status Colors */
+		--info: 191 100% 50%; /* Accent blue */
+		--info-foreground: 0 0% 100%;
+
+		--warning: 353 100% 67%; /* Support coral */
+		--warning-foreground: 0 0% 100%;
+
+		--success: 174 77% 64%; /* Chart teal */
+		--success-foreground: 0 0% 100%;
+
+		/* Sidebar System */
+		--sidebar-background: 0 0% 100% / 0.9;
+		--sidebar-foreground: 240 20% 15%;
+		--sidebar-primary: 261 77% 58%;
+		--sidebar-primary-foreground: 0 0% 100%;
+		--sidebar-accent: 261 77% 95%;
+		--sidebar-accent-foreground: 261 77% 25%;
+		--sidebar-border: 0 0% 100% / 0.2;
+		--sidebar-ring: 261 77% 58%;
+	}
 }
 
 /* Typography System - Satoshi-inspired */
 @layer base {
-  * {
-    @apply border-border;
-  }
+	* {
+		@apply border-border;
+	}
 
-  body {
-    @apply bg-background text-foreground font-medium;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-    font-feature-settings: 'cv11', 'ss01';
-    font-variation-settings: 'opsz' 32;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
+	body {
+		@apply bg-background text-foreground font-medium;
+		font-family:
+			"Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+		font-feature-settings: "cv11", "ss01";
+		font-variation-settings: "opsz" 32;
+		text-rendering: optimizeLegibility;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+	}
 
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-bold tracking-tight;
-  }
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		@apply font-bold tracking-tight;
+	}
 
-  .font-display {
-    @apply font-bold;
-  }
+	.font-display {
+		@apply font-bold;
+	}
 
-  .font-body {
-    @apply font-medium;
-  }
+	.font-body {
+		@apply font-medium;
+	}
 }
 
 /* Glassmorphism Components */
 @layer components {
-  .glass-card {
-    @apply backdrop-blur-xl border border-white/20 shadow-xl;
-    background: rgba(255, 255, 255, 0.8);
-    border-radius: 10px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  }
+	.glass-card {
+		@apply backdrop-blur-xl border border-white/20 shadow-xl;
+		background: rgba(255, 255, 255, 0.8);
+		border-radius: 10px;
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+	}
 
-  .glass-button {
-    @apply backdrop-blur-md border border-white/30 transition-all duration-200;
-    background: rgba(255, 255, 255, 0.1);
-  }
+	.glass-button {
+		@apply backdrop-blur-md border border-white/30 transition-all duration-200;
+		background: rgba(255, 255, 255, 0.1);
+	}
 
-  .glass-navigation {
-    @apply backdrop-blur-lg border-r border-white/20;
-    background: rgba(255, 255, 255, 0.9);
-  }
+	.glass-navigation {
+		@apply backdrop-blur-lg border-r border-white/20;
+		background: rgba(255, 255, 255, 0.9);
+	}
 
-  /* Premium Animations */
-  .fade-in {
-    @apply animate-in fade-in-0 duration-300;
-  }
+	/* Premium Animations */
+	.fade-in {
+		@apply animate-in fade-in-0 duration-300;
+	}
 
-  .slide-in {
-    @apply animate-in slide-in-from-bottom-4 duration-300;
-  }
+	.slide-in {
+		@apply animate-in slide-in-from-bottom-4 duration-300;
+	}
 
-  .hover-lift {
-    @apply transition-transform duration-200 hover:scale-[1.02];
-  }
+	.hover-lift {
+		@apply transition-transform duration-200 hover:scale-[1.02];
+	}
 
-  .hover-glow {
-    @apply transition-shadow duration-200 hover:shadow-lg;
-  }
+	.hover-glow {
+		@apply transition-shadow duration-200 hover:shadow-lg;
+	}
 }
 
 /* Custom Scrollbars */
 @layer utilities {
-  .scrollbar-thin {
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--muted)) transparent;
-  }
+	.scrollbar-thin {
+		scrollbar-width: thin;
+		scrollbar-color: hsl(var(--muted)) transparent;
+	}
 
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 4px;
-  }
+	.scrollbar-thin::-webkit-scrollbar {
+		width: 4px;
+	}
 
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
-  }
+	.scrollbar-thin::-webkit-scrollbar-track {
+		background: transparent;
+	}
 
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted));
-    border-radius: 2px;
-  }
+	.scrollbar-thin::-webkit-scrollbar-thumb {
+		background: hsl(var(--muted));
+		border-radius: 2px;
+	}
 
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground));
-  }
+	.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+		background: hsl(var(--muted-foreground));
+	}
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
+	* {
+		@apply border-border;
+	}
 
-  body {
-    @apply bg-background text-foreground;
-  }
+	body {
+		@apply bg-background text-foreground;
+	}
 }
