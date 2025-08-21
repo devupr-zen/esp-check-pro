@@ -32,7 +32,7 @@ export default function StudentAuth() {
   const [params] = useSearchParams();
 
   const redirectBase = `${window.location.origin}/auth/callback`;
-  const studentHome = "/student";
+  const studentHome = "/student/dashboard";
 
   // ensure profiles row + role after auth
   async function upsertStudentProfile(userId: string) {

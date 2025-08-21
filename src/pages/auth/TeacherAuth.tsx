@@ -40,7 +40,7 @@ export default function TeacherAuth() {
   const [params] = useSearchParams();
 
   const redirectBase = `${window.location.origin}/auth/callback`;
-  const teacherHome = "/teacher";
+  const teacherHome = "/teacher/dashboard";
 
   async function upsertTeacherProfile(userId: string, _email: string | null) {
     await supabase.from("profiles").upsert(
