@@ -8,6 +8,6 @@
     "baseUrl": ".",
     "paths": { "@/*": ["src/*"] }
 	},
-	"include": ["src", "vite.config.ts", "tailwind.config.ts"],
+	"include": ["src", "vite.config.ts", "tailwind.config.ts", ".env.d.ts"],
 	"exclude": ["dist", "node_modules", "supabase/**", "api/**"]
 }

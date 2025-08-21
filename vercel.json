@@ -2,17 +2,15 @@
   "version": 2,
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/favicon\\.ico", "dest": "/favicon.ico" },
+    { "src": "/manifest\\.webmanifest", "dest": "/manifest.webmanifest" },
+    { "src": "/robots\\.txt", "dest": "/robots.txt" },
+    { "src": "/(.*)", "dest": "/index.html" },
 
     {
       "src": "/assets/(.*)",
       "headers": { "cache-control": "public, max-age=31536000, immutable" },
       "dest": "/assets/$1"
-    },
-
-    { "src": "/favicon\\.ico", "dest": "/favicon.ico" },
-    { "src": "/manifest\\.webmanifest", "dest": "/manifest.webmanifest" },
-    { "src": "/robots\\.txt", "dest": "/robots.txt" },
-
-    { "src": "/(.*)", "dest": "/index.html" }
+    }
   ]
 }
