@@ -1,10 +1,6 @@
-import { useState, KeyboardEvent } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  Search, Bell, HelpCircle, User, Settings, MessageSquare, LogOut, Menu,
-} from "lucide-react";
+// src/components/shell/TopBar.tsx
+import { Bell, User, Settings, MessageSquare, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,14 +12,13 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { useNavigate } from "react-router-dom";
 
 interface TopBarProps {
-  onMenuToggle: () => void;
-  isMenuOpen: boolean;
+  pageTitle: string; // Pass title of current page
 }
 
-export function TopBar({ onMenuToggle, isMenuOpen }: TopBarProps) {
-  const [searchQuery, setSearchQuery] = useState("");
+export function TopBar({ pageTitle }: TopBarProps) {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -35,19 +30,8 @@ export function TopBar({ onMenuToggle, isMenuOpen }: TopBarProps) {
     }
   };
 
-  const handleSearchKey = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      // Optional: wire to a /search route if/when you add one
-      if (searchQuery.trim().length > 0) {
-        // navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-        // For now, no-op to avoid 404:
-        console.debug("Search submitted:", searchQuery.trim());
-      }
-    }
-  };
-
   const goSettings = () => navigate("/settings");
-  const goProfile = () => navigate("/settings"); // no /profile page in repo; route to settings
+  const goProfile = () => navigate("/settings/profile");
   const openSupport = () =>
     window.open("mailto:support@upraizen.com?subject=Upraizen%20Support", "_blank");
 
@@ -55,42 +39,17 @@ export function TopBar({ onMenuToggle, isMenuOpen }: TopBarProps) {
     const first = (firstName?.[0] || "").toUpperCase();
     const last = (lastName?.[0] || "").toUpperCase();
     return (first + last) || "U";
-    };
+  };
 
-  // Replace with real notification count when you wire it up
-  const notificationCount = 0;
+  const notificationCount = 0; // wire real count later
 
   return (
-    <header className="h-16 border-b border-border bg-background/80 backdrop-blur-md px-4 md:px-6 flex items-center justify-between">
-      {/* Left - Hamburger + Search */}
-      <div className="flex items-center gap-3 md:gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onMenuToggle}
-          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-          aria-expanded={isMenuOpen}
-        >
-          <Menu className="h-5 w-5" />
-        </Button>
+    <header className="h-14 bg-background/80 backdrop-blur-md px-4 md:px-6 flex items-center justify-between">
+      {/* Left: Page Title */}
+      <h1 className="text-lg font-semibold text-foreground">{pageTitle}</h1>
 
-        <div className="w-48 sm:w-64 md:w-80">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search…"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={handleSearchKey}
-              className="pl-10"
-              aria-label="Search"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Right Actions */}
-      <div className="flex items-center gap-1 md:gap-2">
+      {/* Right: Notifications + User Menu */}
+      <div className="flex items-center gap-2">
         {/* Notifications */}
         <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
           <Bell className="h-5 w-5" />
@@ -99,11 +58,6 @@ export function TopBar({ onMenuToggle, isMenuOpen }: TopBarProps) {
               {notificationCount}
             </Badge>
           )}
-        </Button>
-
-        {/* Help */}
-        <Button variant="ghost" size="icon" aria-label="Help" onClick={openSupport}>
-          <HelpCircle className="h-5 w-5" />
         </Button>
 
         {/* User Menu */}
