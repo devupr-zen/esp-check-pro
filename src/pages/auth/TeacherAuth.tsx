@@ -1,3 +1,4 @@
+// src/pages/auth/TeacherAuth.tsx
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Mail, Lock, User, Eye, EyeOff, Key } from "lucide-react";
@@ -5,13 +6,12 @@ import { ArrowLeft, Mail, Lock, User, Eye, EyeOff, Key } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { GlassCard } from "@/components/ui/GlassCard"; // stable path
+import { GlassCard } from "@/components/ui/GlassCard";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 
-type AuthStep = "signin" | "newPassword" | "reset";
+type AuthStep = "signin" | "signup" | "reset";
 
-// RPC return row shape
 type ValidateInviteRow = {
   ok: boolean;
   invite_id: string | null;
@@ -21,20 +21,20 @@ type ValidateInviteRow = {
 export default function TeacherAuth() {
   const [step, setStep] = useState<AuthStep>("signin");
   const [loading, setLoading] = useState(false);
-  const [showInvite, setShowInvite] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
 
   const [formData, setFormData] = useState({
     email: "",
-    inviteCode: "", // ← renamed from prePassword
-    newPassword: "",
+    password: "",
     confirmPassword: "",
+    inviteCode: "",
     firstName: "",
     lastName: "",
   });
 
-  const [tempUserData, setTempUserData] = useState<{ id: string; expires_at: string | null } | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   const [params] = useSearchParams();
@@ -56,10 +56,12 @@ export default function TeacherAuth() {
   }
 
   useEffect(() => {
+    // remember intended route
     const intended = params.get("returnTo");
     localStorage.setItem("upraizenRole", "teacher");
     if (intended) localStorage.setItem("returnTo", intended);
 
+    // if already signed in, send to teacher home
     (async () => {
       const {
         data: { session },
@@ -68,17 +70,12 @@ export default function TeacherAuth() {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("role, password_changed")
+        .select("role")
         .eq("id", session.user.id)
         .single();
 
       if (profile?.role !== "teacher") {
         await upsertTeacherProfile(session.user.id, session.user.email);
-      }
-
-      if (profile && profile.role === "teacher" && profile.password_changed === false) {
-        setStep("newPassword");
-        return;
       }
 
       const returnTo = localStorage.getItem("returnTo");
@@ -92,57 +89,40 @@ export default function TeacherAuth() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Step 1: validate invite (email + invite_code not used & not expired)
-  const handleInviteCheck = async (e: React.FormEvent) => {
+  /* ---------------- SIGN IN (email + password) ---------------- */
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      // No generic on .rpc — cast the response after
-      const rpc = await supabase.rpc(
-        "validate_teacher_invite",
-        { p_email: formData.email, p_code: formData.inviteCode }
-      );
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: formData.email.trim(),
+        password: formData.password,
+      });
+      if (error) throw error;
 
-      const rows = (rpc.data ?? []) as ValidateInviteRow[];
-      const row = rows[0];
+      if (data.user) await upsertTeacherProfile(data.user.id, data.user.email);
 
-      if (rpc.error || !row || !row.ok || !row.invite_id) {
-        toast({
-          title: "Invalid invite",
-          description: "Check your email and invite code.",
-          variant: "destructive",
-        });
-        return;
+      const returnTo = localStorage.getItem("returnTo");
+      if (returnTo && returnTo.startsWith("/teacher")) {
+        navigate(returnTo, { replace: true });
+        localStorage.removeItem("returnTo");
+      } else {
+        navigate(teacherHome, { replace: true });
       }
-
-      // Extra expiry guard in UI (server already checks)
-      if (row.expires_at && new Date(row.expires_at) < new Date()) {
-        toast({
-          title: "Invite expired",
-          description: "Ask your admin for a new invite code.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setTempUserData({ id: row.invite_id, expires_at: row.expires_at });
-      setStep("newPassword");
-      toast({ title: "Invite verified", description: "Set your new password to continue." });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Unexpected error";
-      toast({ title: "Error", description: msg, variant: "destructive" });
+      const msg = err instanceof Error ? err.message : "Sign-in failed";
+      toast({ title: "Unable to sign in", description: msg, variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
-  // Step 2: create account (first-time) OR update password for existing
-  const handleNewPasswordSubmit = async (e: React.FormEvent) => {
+  /* ---------------- SIGN UP (invite + password) ---------------- */
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
-      if (formData.newPassword !== formData.confirmPassword) {
+      if (formData.password !== formData.confirmPassword) {
         toast({
           title: "Passwords don't match",
           description: "Please make sure both passwords are identical.",
@@ -151,72 +131,75 @@ export default function TeacherAuth() {
         return;
       }
 
-      if (tempUserData) {
-        // First-time: sign up + upsert profile + mark invite used
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.newPassword,
-          options: {
-            emailRedirectTo: `${redirectBase}?returnTo=${encodeURIComponent(teacherHome)}`,
-            data: {
-              role: "teacher",
-              first_name: formData.firstName,
-              last_name: formData.lastName,
-            },
-          },
-        });
-        if (authError) throw authError;
+      // 1) Validate invite via RPC
+      const rpc = await supabase.rpc("validate_teacher_invite", {
+        p_email: formData.email.trim(),
+        p_code: formData.inviteCode.trim(),
+      });
+      const rows = (rpc.data ?? []) as ValidateInviteRow[];
+      const row = rows[0];
 
-        if (authData.user) {
-          await upsertTeacherProfile(authData.user.id, authData.user.email);
-        }
-
-        // Safer via RPC if you prefer: await supabase.rpc('mark_teacher_invite_used', { p_invite_id: tempUserData.id })
-        await supabase
-          .from("teacher_credentials")
-          .update({ is_used: true, used_at: new Date().toISOString() })
-          .eq("id", tempUserData.id);
-
+      if (rpc.error || !row?.ok || !row.invite_id) {
         toast({
-          title: "Account created",
-          description: "Check your email to verify your account.",
+          title: "Invalid invite",
+          description: "Check your email and invite code.",
+          variant: "destructive",
         });
-      } else {
-        // Existing user changing password (rare path here)
-        const { error } = await supabase.auth.updateUser({ password: formData.newPassword });
-        if (error) throw error;
-
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        if (session) {
-          await upsertTeacherProfile(session.user.id, session.user.email);
-          await supabase.from("profiles").update({ password_changed: true }).eq("id", session.user.id);
-        }
-
-        toast({ title: "Password updated", description: "Your password has been changed." });
+        return;
+      }
+      if (row.expires_at && new Date(row.expires_at) < new Date()) {
+        toast({
+          title: "Invite expired",
+          description: "Ask your admin for a new invite.",
+          variant: "destructive",
+        });
+        return;
       }
 
+      // 2) Sign up in Supabase
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email.trim(),
+        password: formData.password,
+        options: {
+          emailRedirectTo: `${redirectBase}?returnTo=${encodeURIComponent(teacherHome)}`,
+          data: {
+            role: "teacher",
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+          },
+        },
+      });
+      if (authError) throw authError;
+
+      // 3) Create/ensure profile + mark invite used
+      if (authData.user) {
+        await upsertTeacherProfile(authData.user.id, authData.user.email);
+      }
+      await supabase
+        .from("teacher_credentials")
+        .update({ is_used: true, used_at: new Date().toISOString() })
+        .eq("id", row.invite_id);
+
+      toast({ title: "Account created", description: "Check your email to verify your account." });
       navigate(teacherHome, { replace: true });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Unexpected error";
-      toast({ title: "Error", description: msg, variant: "destructive" });
+      const msg = err instanceof Error ? err.message : "Sign-up failed";
+      toast({ title: "Unable to sign up", description: msg, variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
-  // Step 3: reset password
+  /* ---------------- RESET PASSWORD ---------------- */
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(formData.email.trim(), {
         redirectTo: `${redirectBase}?returnTo=/auth/reset`,
       });
       if (error) throw error;
-
-      toast({ title: "Reset email sent", description: "Check your email for reset instructions." });
+      toast({ title: "Reset email sent", description: "Check your inbox." });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unexpected error";
       toast({ title: "Error", description: msg, variant: "destructive" });
@@ -232,7 +215,9 @@ export default function TeacherAuth() {
         <div className="absolute inset-0 bg-black/20" />
         <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
           <h1 className="text-5xl font-bold mb-6">Upraizen ESPCheck Pro</h1>
-          <p className="text-xl text-center max-w-md">Teacher Portal - Create, manage, and track progress</p>
+          <p className="text-xl text-center max-w-md">
+            Teacher Portal - Create, manage, and track progress
+          </p>
         </div>
       </div>
 
@@ -248,24 +233,123 @@ export default function TeacherAuth() {
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-foreground mb-2">
                 {step === "signin" && "Teacher Access"}
-                {step === "newPassword" && "Set New Password"}
+                {step === "signup" && "Teacher Sign Up"}
                 {step === "reset" && "Reset Password"}
               </h2>
               <p className="text-muted-foreground">
-                {step === "signin" && "Enter your email and invite code to begin"}
-                {step === "newPassword" && "Create a secure password for your account"}
+                {step === "signin" && "Enter your email and password to sign in"}
+                {step === "signup" && "Create your account with invite code"}
                 {step === "reset" && "Enter your email to reset your password"}
               </p>
             </div>
 
+            {/* --------- SIGN IN --------- */}
             {step === "signin" && (
-              <form onSubmit={handleInviteCheck} className="space-y-6">
+              <form onSubmit={handleSignIn} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="email"
+                      type="email"
+                      placeholder="teacher@example.com"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      className="pl-10 pr-10"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                  {loading ? "Signing in..." : "Continue"}
+                </Button>
+
+                <div className="flex items-center justify-between text-sm">
+                  <button
+                    type="button"
+                    onClick={() => setStep("reset")}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    Forgot password?
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStep("signup")}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    New here? Sign up
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* --------- SIGN UP --------- */}
+            {step === "signup" && (
+              <form onSubmit={handleSignUp} className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="firstName"
+                        type="text"
+                        placeholder="John"
+                        value={formData.firstName}
+                        onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="lastName"
+                        type="text"
+                        placeholder="Doe"
+                        value={formData.lastName}
+                        onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="signupEmail">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="signupEmail"
                       type="email"
                       placeholder="teacher@example.com"
                       value={formData.email}
@@ -299,78 +383,25 @@ export default function TeacherAuth() {
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full" size="lg" disabled={loading}>
-                  {loading ? "Verifying..." : "Continue"}
-                </Button>
-
-                <div className="text-center">
-                  <button
-                    type="button"
-                    onClick={() => setStep("reset")}
-                    className="text-sm text-muted-foreground hover:text-foreground"
-                  >
-                    Need help accessing your account?
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {step === "newPassword" && (
-              <form onSubmit={handleNewPasswordSubmit} className="space-y-6">
-                {tempUserData && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name</Label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="firstName"
-                          type="text"
-                          placeholder="John"
-                          value={formData.firstName}
-                          onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                          className="pl-10"
-                          required
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name</Label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="lastName"
-                          type="text"
-                          placeholder="Doe"
-                          value={formData.lastName}
-                          onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                          className="pl-10"
-                          required
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
                 <div className="space-y-2">
-                  <Label htmlFor="newPassword">New Password</Label>
+                  <Label htmlFor="signupPassword">Password</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
-                      id="newPassword"
-                      type={showNewPassword ? "text" : "password"}
+                      id="signupPassword"
+                      type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
-                      value={formData.newPassword}
-                      onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                       className="pl-10 pr-10"
                       required
                     />
                     <button
                       type="button"
-                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                     >
-                      {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
                 </div>
@@ -399,11 +430,22 @@ export default function TeacherAuth() {
                 </div>
 
                 <Button type="submit" className="w-full" size="lg" disabled={loading}>
-                  {loading ? "Setting Password..." : "Set Password"}
+                  {loading ? "Creating account..." : "Create Account"}
                 </Button>
+
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setStep("signin")}
+                    className="text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    Already have an account? Sign in
+                  </button>
+                </div>
               </form>
             )}
 
+            {/* --------- RESET --------- */}
             {step === "reset" && (
               <form onSubmit={handleReset} className="space-y-6">
                 <div className="space-y-2">
