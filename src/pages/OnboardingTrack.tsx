@@ -5,7 +5,7 @@ import { Check, BookOpen, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 
 /**
  * OnboardingTrack
@@ -14,7 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
  * - Redirects teachers/superadmins away immediately.
  *
  * Requirements:
- * - Supabase client exported from '@/integrations/supabase/client'.
+ * - Supabase client exported from '@/lib/supabase'.
  * - shadcn/ui (Button, Card) and Tailwind available.
  * - React Router in the app.
  */
