@@ -42,14 +42,15 @@ export default function TeacherAuth() {
   const redirectBase = `${window.location.origin}/auth/callback`;
   const teacherHome = "/teacher/dashboard";
 
-  async function upsertTeacherProfile(userId: string, _email: string | null) {
+  async function upsertTeacherProfile(userId: string, email: string | null) {
     await supabase.from("profiles").upsert(
       {
         id: userId,
+        email: email ?? null, // keep NOT NULL happy
         role: "teacher",
         full_name:
-          [formData.firstName, formData.lastName].filter(Boolean).join(" ") ||
-          null,
+          [formData.firstName, formData.lastName].filter(Boolean).join(" ") || null,
+        is_active: true, // if column exists
       },
       { onConflict: "id" }
     );
@@ -66,22 +67,14 @@ export default function TeacherAuth() {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      if (!session) return;
+      if (!session?.user) return;
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", session.user.id)
-        .single();
-
-      if (profile?.role !== "teacher") {
-        await upsertTeacherProfile(session.user.id, session.user.email);
-      }
+      await upsertTeacherProfile(session.user.id, session.user.email);
 
       const returnTo = localStorage.getItem("returnTo");
       if (returnTo && returnTo.startsWith("/teacher")) {
-        navigate(returnTo, { replace: true });
         localStorage.removeItem("returnTo");
+        navigate(returnTo, { replace: true });
       } else {
         navigate(teacherHome, { replace: true });
       }
@@ -104,8 +97,8 @@ export default function TeacherAuth() {
 
       const returnTo = localStorage.getItem("returnTo");
       if (returnTo && returnTo.startsWith("/teacher")) {
-        navigate(returnTo, { replace: true });
         localStorage.removeItem("returnTo");
+        navigate(returnTo, { replace: true });
       } else {
         navigate(teacherHome, { replace: true });
       }
@@ -137,7 +130,7 @@ export default function TeacherAuth() {
         p_code: formData.inviteCode.trim(),
       });
       const rows = (rpc.data ?? []) as ValidateInviteRow[];
-      const row = rows[0];
+      const row = rows?.[0];
 
       if (rpc.error || !row?.ok || !row.invite_id) {
         toast({
@@ -156,7 +149,7 @@ export default function TeacherAuth() {
         return;
       }
 
-      // 2) Sign up in Supabase
+      // 2) Sign up
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email.trim(),
         password: formData.password,
@@ -171,7 +164,7 @@ export default function TeacherAuth() {
       });
       if (authError) throw authError;
 
-      // 3) Create/ensure profile + mark invite used
+      // 3) Ensure profile + mark invite used
       if (authData.user) {
         await upsertTeacherProfile(authData.user.id, authData.user.email);
       }
