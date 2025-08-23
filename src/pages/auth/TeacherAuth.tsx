@@ -72,7 +72,7 @@ export default function TeacherAuth() {
       await upsertTeacherProfile(session.user.id, session.user.email);
 
       const returnTo = localStorage.getItem("returnTo");
-      if (returnTo && returnTo.startsWith("/teacher")) {
+      if (returnTo && returnTo.startsWith("/teacher/dashboard")) {
         localStorage.removeItem("returnTo");
         navigate(returnTo, { replace: true });
       } else {
@@ -96,7 +96,7 @@ export default function TeacherAuth() {
       if (data.user) await upsertTeacherProfile(data.user.id, data.user.email);
 
       const returnTo = localStorage.getItem("returnTo");
-      if (returnTo && returnTo.startsWith("/teacher")) {
+      if (returnTo && returnTo.startsWith("/teacher/dashboard")) {
         localStorage.removeItem("returnTo");
         navigate(returnTo, { replace: true });
       } else {
